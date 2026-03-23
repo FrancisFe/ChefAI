@@ -1,0 +1,6 @@
+@ChefAI.API_HostAddress = http://localhost:5010
+
+GET {{ChefAI.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

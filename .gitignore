@@ -1,0 +1,10 @@
+# .NET
+bin
+obj
+
+# Node (frontend)
+node_modules
+dist
+
+# VS
+.vs
