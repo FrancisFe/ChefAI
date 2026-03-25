@@ -1,3 +1,6 @@
 <Solution>
+  <Project Path="../ChefAI.Application/ChefAI.Application.csproj" />
+  <Project Path="../ChefAI.Domain/ChefAI.Domain.csproj" />
+  <Project Path="../ChefAI.Infraestructure/ChefAI.Infraestructure.csproj" />
   <Project Path="ChefAI.API.csproj" />
 </Solution>
