@@ -2,7 +2,9 @@ using ChefAI.API.Middleware;
 using ChefAI.Application.Interfaces.Repositories;
 using ChefAI.Application.Interfaces.Services;
 using ChefAI.Application.Services;
+using ChefAI.Infraestructure.CloudinaryServices;
 using ChefAI.Infraestructure.Data;
+using ChefAI.Infraestructure.Gemini;
 using ChefAI.Infraestructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -86,9 +88,17 @@ builder.Services.AddAuthentication(opt =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 
+builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IStorageService, CloudinaryService>();
+builder.Services.AddHttpClient<IGeminiVisionService, GeminiVisionService>();
+builder.Services.AddHttpClient<IGeminiRecipeService, GeminiRecipeService>();
+
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection("GeminiSettings"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
