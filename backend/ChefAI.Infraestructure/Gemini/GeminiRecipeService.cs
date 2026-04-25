@@ -20,7 +20,19 @@ namespace ChefAI.Infraestructure.Gemini
 
         public async IAsyncEnumerable<string> GenerateContentAsync(string prompt, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var stream = CallGeminiStreaming(prompt, cancellationToken);
+            var stream = CallGeminiStreaming(prompt, null, cancellationToken);
+            await foreach (var chunk in stream.WithCancellation(cancellationToken))
+            {
+                yield return chunk.Text;
+            }
+        }
+
+        public async IAsyncEnumerable<string> GenerateContentAsync(
+            string systemPrompt,
+            string userPrompt,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var stream = CallGeminiStreaming(userPrompt, systemPrompt, cancellationToken);
             await foreach (var chunk in stream.WithCancellation(cancellationToken))
             {
                 yield return chunk.Text;
@@ -28,18 +40,20 @@ namespace ChefAI.Infraestructure.Gemini
         }
 
         private async IAsyncEnumerable<GeminiTextChunk> CallGeminiStreaming(
-            string prompt,
+            string userPrompt,
+            string? systemPrompt,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var requestBody = new
             {
+                systemInstruction = systemPrompt != null ? new { parts = new[] { new { text = systemPrompt } } } : null,
                 contents = new[]
                 {
                     new
                     {
                         parts = new[]
                         {
-                            new { text = prompt }
+                            new { text = userPrompt }
                         }
                     }
                 }

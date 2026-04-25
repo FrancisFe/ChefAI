@@ -1,9 +1,7 @@
 ﻿using ChefAI.Application.Interfaces.Repositories;
 using ChefAI.Domain.Entities;
 using ChefAI.Infraestructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChefAI.Infraestructure.Repositories
 {
@@ -19,6 +17,16 @@ namespace ChefAI.Infraestructure.Repositories
         {
             await _context.Recipes.AddAsync(recipe, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<List<Recipe>> GetAllRecipesByUserId(int userId)
+        {
+            var recipes = await _context.Recipes
+                .Where(r => r.UserId == userId)
+                .Include(r => r.Ingredients)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+            return recipes;
         }
     }
 }

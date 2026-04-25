@@ -6,6 +6,7 @@ using ChefAI.Infraestructure.CloudinaryServices;
 using ChefAI.Infraestructure.Data;
 using ChefAI.Infraestructure.Gemini;
 using ChefAI.Infraestructure.Repositories;
+using ChefAI.Infraestructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,11 +15,15 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policyBuilder =>
@@ -92,6 +97,9 @@ builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRecipeTextParser, RecipeTextParser>();
+builder.Services.AddScoped<IRecipePromptBuilder, RecipePromptBuilder>();
+builder.Services.AddScoped<IRecipeMapper, RecipeMapper>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, CloudinaryService>();
 builder.Services.AddHttpClient<IGeminiVisionService, GeminiVisionService>();
@@ -101,7 +109,7 @@ builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection(
 builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection("GeminiSettings"));
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

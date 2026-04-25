@@ -1,10 +1,13 @@
 ﻿using ChefAI.Application.DTOs.Recipe;
 using ChefAI.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ChefAI.API.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class RecipeController : ControllerBase
     {
@@ -66,7 +69,22 @@ namespace ChefAI.API.Controllers
 
             return new EmptyResult();
         }
+        [HttpGet("user")]
+        public async Task<IActionResult> GetAllRecipesByUserId()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
-        private static string EscapeSse(string value) => value.Replace("\r", string.Empty).Replace("\n", "\\n");
+            if (userId == 0)
+                return Unauthorized("No user ID found in token");
+
+            var recipes = await _recipeService.GetAllRecipesByUserId(userId);
+            return Ok(recipes);
+        }
+
+
+        private static string EscapeSse(string value) => value
+    .Replace("\r\n", "\\n")
+    .Replace("\n", "\\n")
+    .Replace("\r", "\\n");
     }
 }

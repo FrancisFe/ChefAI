@@ -1,11 +1,9 @@
-﻿using ChefAI.Application.DTOs.Recipe;
+using ChefAI.Application.DTOs.Recipe;
 using ChefAI.Application.Interfaces.Repositories;
 using ChefAI.Application.Interfaces.Services;
-using ChefAI.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Json;
 
 namespace ChefAI.Application.Services
 {
@@ -13,15 +11,24 @@ namespace ChefAI.Application.Services
     {
         private readonly IGeminiRecipeService _geminiService;
         private readonly IRecipeRepository _recipeRepository;
+        private readonly IRecipeTextParser _textParser;
+        private readonly IRecipePromptBuilder _promptBuilder;
+        private readonly IRecipeMapper _mapper;
         private readonly ILogger<RecipeService> _logger;
 
         public RecipeService(
             IGeminiRecipeService geminiService,
             IRecipeRepository recipeRepository,
+            IRecipeTextParser textParser,
+            IRecipePromptBuilder promptBuilder,
+            IRecipeMapper mapper,
             ILogger<RecipeService> logger)
         {
             _geminiService = geminiService;
             _recipeRepository = recipeRepository;
+            _textParser = textParser;
+            _promptBuilder = promptBuilder;
+            _mapper = mapper;
             _logger = logger;
         }
 
@@ -29,11 +36,16 @@ namespace ChefAI.Application.Services
             RecipeRequestDto request,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var prompt = BuildPrompt(request);
+            var systemPrompt = _promptBuilder.BuildSystemPrompt();
+            var userPrompt = _promptBuilder.BuildUserPrompt(request);
+
+            _logger.LogInformation("Generando receta con ingredientes: {Ingredients}",
+                string.Join(", ", request.Ingredients));
+
             var fullContent = new StringBuilder();
 
             await using var enumerator = _geminiService
-                .GenerateContentAsync(prompt, cancellationToken)
+                .GenerateContentAsync(systemPrompt, userPrompt, cancellationToken)
                 .GetAsyncEnumerator(cancellationToken);
 
             while (!cancellationToken.IsCancellationRequested)
@@ -44,6 +56,7 @@ namespace ChefAI.Application.Services
                 {
                     if (!await enumerator.MoveNextAsync())
                     {
+                        _logger.LogInformation("Streaming completado normalmente");
                         break;
                     }
 
@@ -61,7 +74,10 @@ namespace ChefAI.Application.Services
                 }
 
                 fullContent.Append(chunk);
+
                 yield return chunk;
+
+                await Task.Delay(50, cancellationToken);
             }
 
             if (!cancellationToken.IsCancellationRequested)
@@ -71,129 +87,73 @@ namespace ChefAI.Application.Services
         }
 
         private async Task SaveGeneratedRecipeAsync(
-            string generatedJson,
+            string generatedText,
             RecipeRequestDto request,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(generatedJson))
+            if (string.IsNullOrWhiteSpace(generatedText))
             {
-                _logger.LogWarning("La IA no devolvió contenido para deserializar la receta.");
+                _logger.LogWarning("La IA no devolvió contenido para la receta.");
                 return;
             }
 
-            var cleanedJson = CleanJsonResponse(generatedJson);
-            var generated = DeserializeRecipe(cleanedJson);
+            var generated = _textParser.ParseRecipeFromText(generatedText);
 
             if (generated is null)
             {
-                _logger.LogError("No se pudo deserializar la receta generada.");
+                _logger.LogError("No se pudo parsear la receta generada. Texto:\n{GeneratedText}",
+                    generatedText.Substring(0, Math.Min(500, generatedText.Length)));
                 return;
             }
 
-            var recipe = MapToRecipeEntity(generated, request);
-            await _recipeRepository.SaveAsync(recipe, cancellationToken);
-        }
+            _logger.LogInformation(
+                "Receta parseada: {Title} - {IngredientCount} ingredientes, {StepCount} pasos",
+                generated.Title,
+                generated.Ingredients.Count,
+                generated.Steps.Count);
 
-        private string CleanJsonResponse(string json)
-        {
-            var cleaned = json
-                .Replace("data:", string.Empty)
-                .Replace("[DONE]", string.Empty)
-                .Replace("```json", string.Empty)
-                .Replace("```", string.Empty)
-                .Trim();
-            return cleaned;
-        }
+            var recipe = _mapper.MapToRecipeEntity(generated, request);
 
-        private GeneratedRecipeDto? DeserializeRecipe(string json)
-        {
             try
             {
-                return JsonSerializer.Deserialize<GeneratedRecipeDto>(
-                    json,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                await _recipeRepository.SaveAsync(recipe, cancellationToken);
+                _logger.LogInformation("Receta '{Title}' guardada exitosamente para usuario {UserId}",
+                    recipe.Title, request.UserId);
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al deserializar JSON de receta.");
-                return null;
+                _logger.LogError(ex, "Error al guardar la receta en la BD");
+                throw;
             }
         }
 
-        private Recipe MapToRecipeEntity(GeneratedRecipeDto generated, RecipeRequestDto request)
+        public async Task<List<AllRecipesByUserIdDto>> GetAllRecipesByUserId(int userId)
         {
-            return new Recipe
+            _logger.LogInformation("Obteniendo recetas para usuario {UserId}", userId);
+
+            var recipes = await _recipeRepository.GetAllRecipesByUserId(userId);
+
+            var result = recipes.Select(r => new AllRecipesByUserIdDto
             {
-                Title = generated.Title,
-                Description = generated.Description,
-                CookingTime = TimeSpan.FromMinutes(generated.CookingTimeMinutes),
-                Servings = generated.Servings,
-                UserId = request.UserId,
-                CreatedAt = DateTime.UtcNow,
-                Ingredients = generated.Ingredients
-                    .Select(i => new RecipeIngredient
+                Title = r.Title,
+                Description = r.Description,
+                CookingTime = r.CookingTime,
+                Servings = r.Servings,
+                IsFavorite = r.IsFavorite,
+                Ingredients = r.Ingredients
+                    .Select(i => new AllRecipeIngredientDto
                     {
                         Name = i.Name,
-                        Quantity = decimal.TryParse(i.Quantity, out var q) ? q : 0
+                        Quantity = i.Quantity,
+                        Unit = i.Unit
                     })
-                    .ToList(),
-                Steps = string.Join("\n", generated.Steps ?? new List<string>())
-            };
-        }
+                    .ToList()
+            }).ToList();
 
-        private static string BuildPrompt(RecipeRequestDto request)
-        {
-            var sb = new StringBuilder();
+            _logger.LogInformation("Se obtuvieron {Count} recetas para usuario {UserId}",
+                result.Count, userId);
 
-            sb.AppendLine("Generate a recipe in JSON format.");
-            sb.AppendLine("Respond ONLY in Spanish.");
-            sb.AppendLine("Return ONLY valid JSON. Do not include explanations or extra text.");
-            sb.AppendLine("Include clear, detailed, step-by-step cooking instructions.");
-            sb.AppendLine("Use realistic seasoning. Include salt, pepper, and optional spices 'to taste' instead of only salt.");
-            sb.AppendLine("Ingredients must include condiments like salt, pepper, and spices when appropriate.");
-            sb.AppendLine("Use 'a gusto' for seasoning quantities.");
-            sb.AppendLine("Steps must be ordered and easy to follow.");
-            sb.AppendLine(
-                """
-                {
-                  "title": "",
-                  "description": "",
-                  "cookingTimeMinutes": 0,
-                  "servings": 0,
-                  "ingredients": [
-                    {
-                      "name": "",
-                      "quantity": ""
-                    }
-                  ],
-                  "steps": [
-                    "Paso 1...",
-                    "Paso 2..."
-                  ]
-                }
-                """);
-
-            sb.AppendLine("Ingredients available:");
-            sb.AppendLine(string.Join(", ", request.Ingredients));
-
-            if (request.Servings.HasValue)
-            {
-                sb.AppendLine($"Servings: {request.Servings}");
-            }
-
-            if (request.MaxCookingTimeMinutes.HasValue)
-            {
-                sb.AppendLine($"Max cooking time: {request.MaxCookingTimeMinutes} minutes");
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Difficulty))
-            {
-                sb.AppendLine($"Difficulty: {request.Difficulty}");
-            }
-
-            sb.AppendLine("Start writing immediately in a streaming fashion.");
-
-            return sb.ToString();
+            return result;
         }
     }
 }

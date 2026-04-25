@@ -2,6 +2,6 @@
 {
     public interface IGeminiRecipeService
     {
-        public IAsyncEnumerable<string> GenerateContentAsync(string prompt, CancellationToken cancellationToken);
+        public IAsyncEnumerable<string> GenerateContentAsync(string systemPrompt, string userPrompt, CancellationToken cancellationToken);
     }
 }

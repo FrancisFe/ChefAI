@@ -15,7 +15,7 @@ namespace ChefAI.Infraestructure.Configs
                    .IsRequired()
                    .HasMaxLength(100);
             builder.Property(ri => ri.Quantity)
-                   .IsRequired()
+                   .IsRequired(false)
                    .HasColumnType("decimal(10,2)");
             builder.Property(ri => ri.Unit)
                    .IsRequired()

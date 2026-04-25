@@ -25,6 +25,9 @@ namespace ChefAI.Infraestructure.Configs
                    .IsRequired();
             builder.Property(r => r.CreatedAt)
                    .IsRequired();
+            builder.Property(r => r.Steps)
+                   .IsRequired()
+                   .HasMaxLength(8000);
 
             builder.HasOne(r => r.User)
                    .WithMany(u => u.Recipes)

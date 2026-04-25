@@ -8,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace ChefAI.Application.Services
+namespace ChefAI.Infraestructure.Services
 {
     public class TokenService : ITokenService
     {

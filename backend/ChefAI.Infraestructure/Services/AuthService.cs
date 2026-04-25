@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 
-namespace ChefAI.Application.Services
+namespace ChefAI.Infraestructure.Services
 {
     public class AuthService : IAuthService
     {

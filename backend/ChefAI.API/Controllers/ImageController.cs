@@ -1,8 +1,10 @@
 ﻿using ChefAI.Application.DTOs;
 using ChefAI.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ImageController : ControllerBase
 {
