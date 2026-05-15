@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRecipeStream } from "../hooks/useRecipeStream";
+import { useDetectIngredients } from "../hooks/useDetectIngredients";
 import RecipeDisplay from "./RecipeDisplay";
 
 export default function RecipeGeneratorPage() {
@@ -7,8 +8,28 @@ export default function RecipeGeneratorPage() {
   const [servings, setServings] = useState(1);
   const [maxCookingTimeMinutes, setMaxCookingTimeMinutes] = useState(30);
   const [difficulty, setDifficulty] = useState("easy");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const {recipe, isStreaming, error, startStream } = useRecipeStream();
+  const { recipe, isStreaming, error, startStream } = useRecipeStream();
+  const { detectFromImage, isDetecting, error: detectError } = useDetectIngredients();
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Mostrar preview de la imagen
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Detectar ingredientes
+    const detectedIngredients = await detectFromImage(file);
+    if (detectedIngredients.length > 0) {
+      setInput(detectedIngredients.join(", "));
+    }
+  };
 
   const handleGenerate = () => {
     if (!input.trim()) return;
@@ -31,6 +52,27 @@ export default function RecipeGeneratorPage() {
   return (
     <div>
       <h1>Generar Receta</h1>
+
+      <div style={{ marginBottom: "20px", padding: "20px", border: "2px dashed #ccc", borderRadius: "8px" }}>
+        <h3>Detectar ingredientes desde imagen</h3>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          disabled={isDetecting}
+        />
+        {isDetecting && <p style={{ color: "blue" }}>Detectando ingredientes...</p>}
+        {detectError && <p style={{ color: "red" }}>Error: {detectError}</p>}
+        {imagePreview && (
+          <div style={{ marginTop: "10px" }}>
+            <img
+              src={imagePreview}
+              alt="Preview"
+              style={{ maxWidth: "200px", maxHeight: "200px", borderRadius: "8px" }}
+            />
+          </div>
+        )}
+      </div>
 
       <textarea
         placeholder="Ej: pollo, arroz, cebolla"

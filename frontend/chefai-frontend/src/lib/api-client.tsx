@@ -76,3 +76,26 @@ export const getRecipesByUserId = async (userId: number): Promise<RecipeHistoryI
   });
   return response.data;
 };
+
+// Detect ingredients from image
+export interface DetectedIngredientsResponse {
+  ingredients: string[];
+}
+
+export const detectIngredientsFromImage = async (
+  file: File
+): Promise<DetectedIngredientsResponse> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await apiClient.post<DetectedIngredientsResponse>(
+    "/recipe/detect-ingredients",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
