@@ -23,6 +23,7 @@ namespace ChefAI.Infraestructure.Data
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+            
         }
 
     }

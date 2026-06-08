@@ -1,7 +1,3 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
-
 namespace ChefAI.API.Middleware
 {
     public class ExceptionHandlingMiddleware

@@ -11,7 +11,7 @@ export const useDetectIngredients = () => {
 
     try {
       const result = await detectIngredientsFromImage(file);
-      return result.ingredients;
+      return result.ingredients.split(", ").filter((ing) => ing.trim());
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Error al detectar ingredientes";

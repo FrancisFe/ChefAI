@@ -6,7 +6,6 @@ using ChefAI.Infraestructure.CloudinaryServices;
 using ChefAI.Infraestructure.Data;
 using ChefAI.Infraestructure.Gemini;
 using ChefAI.Infraestructure.Repositories;
-using ChefAI.Infraestructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -93,6 +92,7 @@ builder.Services.AddAuthentication(opt =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 
 builder.Services.AddScoped<IRecipeService, RecipeService>();

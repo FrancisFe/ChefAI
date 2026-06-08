@@ -79,7 +79,8 @@ export const getRecipesByUserId = async (userId: number): Promise<RecipeHistoryI
 
 // Detect ingredients from image
 export interface DetectedIngredientsResponse {
-  ingredients: string[];
+  imageURL: string;
+  ingredients: string;
 }
 
 export const detectIngredientsFromImage = async (
@@ -89,7 +90,7 @@ export const detectIngredientsFromImage = async (
   formData.append("file", file);
 
   const response = await apiClient.post<DetectedIngredientsResponse>(
-    "/recipe/detect-ingredients",
+    "/image/detect-ingredients",
     formData,
     {
       headers: {

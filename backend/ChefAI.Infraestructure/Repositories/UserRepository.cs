@@ -54,6 +54,7 @@ namespace ChefAI.Infraestructure.Repositories
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
         }
+      
     }
 }
 

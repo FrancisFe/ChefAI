@@ -1,4 +1,4 @@
-﻿using ChefAI.Application.DTOs.Auth;
+using ChefAI.Application.DTOs.Auth;
 using ChefAI.Application.DTOs.User;
 using ChefAI.Application.Interfaces.Repositories;
 using ChefAI.Application.Interfaces.Services;
@@ -8,18 +8,20 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 
-namespace ChefAI.Infraestructure.Services
+namespace ChefAI.Application.Services
 {
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IUserProfileRepository _userProfileRepository;
         private readonly ILogger<AuthService> _logger;
         private readonly ITokenService _tokenService;
         public AuthService(
-           IUserRepository userRepository,
+           IUserRepository userRepository, IUserProfileRepository userProfileRepository,
            ILogger<AuthService> logger, ITokenService tokenService)
         {
             _userRepository = userRepository;
+            _userProfileRepository = userProfileRepository;
             _logger = logger;
             _tokenService = tokenService;
         }
@@ -95,7 +97,9 @@ namespace ChefAI.Infraestructure.Services
             };
             user.PasswordHash = hasher.HashPassword(user, request.Password);
 
+
             await _userRepository.AddAsync(user);
+            await CreateDefaultUserProfileAsync(user.Id);
             _logger.LogInformation("User {Email} registered successfully", user.Email);
             return new UserDto
             {
@@ -167,6 +171,19 @@ namespace ChefAI.Infraestructure.Services
             return true;
         }
 
+        private async Task<UserProfile> CreateDefaultUserProfileAsync(int userId)
+        {
+            var profile = new UserProfile
+            {
+                UserId = userId,
+                PreferredDifficulty = "Medium",
+                MaxCookingTime = TimeSpan.FromMinutes(30),
+                DefaultServings = 4
+            };
+
+            await _userProfileRepository.AddAsync(profile);
+            return profile;
+        }
         private string GenerateRefreshToken()
         {
             return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));

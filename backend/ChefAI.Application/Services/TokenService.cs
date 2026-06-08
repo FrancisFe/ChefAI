@@ -1,4 +1,4 @@
-﻿using ChefAI.Application.DTOs.Auth;
+using ChefAI.Application.DTOs.Auth;
 using ChefAI.Application.Interfaces.Services;
 using ChefAI.Domain.Entities;
 using Microsoft.Extensions.Configuration;
@@ -8,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace ChefAI.Infraestructure.Services
+namespace ChefAI.Application.Services
 {
     public class TokenService : ITokenService
     {
