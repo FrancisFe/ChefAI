@@ -35,21 +35,25 @@ namespace ChefAI.API.Middleware
                 case ArgumentNullException:
                     statusCode = StatusCodes.Status400BadRequest;
                     response = new { message = "Datos requeridos faltantes" };
+                    _logger.LogWarning(exception, "Argument null exception");
                     break;
 
                 case InvalidOperationException:
                     statusCode = StatusCodes.Status400BadRequest;
                     response = new { message = exception.Message };
+                    _logger.LogWarning(exception, "Invalid operation exception");
                     break;
 
                 case UnauthorizedAccessException:
                     statusCode = StatusCodes.Status401Unauthorized;
                     response = new { message = exception.Message };
+                    _logger.LogWarning(exception, "Unauthorized access exception");
                     break;
 
                 case KeyNotFoundException:
                     statusCode = StatusCodes.Status404NotFound;
                     response = new { message = "Recurso no encontrado" };
+                    _logger.LogWarning(exception, "Resource not found");
                     break;
 
                 default:
@@ -59,6 +63,7 @@ namespace ChefAI.API.Middleware
                         message = "Error interno del servidor",
                         traceId = context.TraceIdentifier
                     };
+                    _logger.LogError(exception, "Unhandled exception");
                     break;
             }
 

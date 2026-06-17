@@ -69,6 +69,7 @@ namespace ChefAI.API.Controllers
 
             return new EmptyResult();
         }
+
         [HttpGet("user")]
         public async Task<IActionResult> GetAllRecipesByUserId()
         {
@@ -81,10 +82,9 @@ namespace ChefAI.API.Controllers
             return Ok(recipes);
         }
 
-
         private static string EscapeSse(string value) => value
-    .Replace("\r\n", "\\n")
-    .Replace("\n", "\\n")
-    .Replace("\r", "\\n");
+            .Replace("\r\n", "\\n")
+            .Replace("\n", "\\n")
+            .Replace("\r", "\\n");
     }
 }

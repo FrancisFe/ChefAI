@@ -171,7 +171,7 @@ namespace ChefAI.Application.Services
             return true;
         }
 
-        private async Task<UserProfile> CreateDefaultUserProfileAsync(int userId)
+        private async Task CreateDefaultUserProfileAsync(int userId)
         {
             var profile = new UserProfile
             {
@@ -182,7 +182,7 @@ namespace ChefAI.Application.Services
             };
 
             await _userProfileRepository.AddAsync(profile);
-            return profile;
+
         }
         private string GenerateRefreshToken()
         {

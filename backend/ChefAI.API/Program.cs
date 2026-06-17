@@ -94,6 +94,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+builder.Services.AddScoped<IDietaryRestrictionRepository, DietaryRestrictionRepository>();
 
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -102,8 +103,11 @@ builder.Services.AddScoped<IRecipePromptBuilder, RecipePromptBuilder>();
 builder.Services.AddScoped<IRecipeMapper, RecipeMapper>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, CloudinaryService>();
+builder.Services.AddScoped<IDietaryRestrictionService, DietaryRestrictionService>();
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddHttpClient<IGeminiVisionService, GeminiVisionService>();
 builder.Services.AddHttpClient<IGeminiRecipeService, GeminiRecipeService>();
+
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection("GeminiSettings"));
@@ -115,7 +119,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();

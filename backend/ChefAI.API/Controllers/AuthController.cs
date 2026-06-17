@@ -11,12 +11,10 @@ namespace ChefAI.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
-            _logger = logger;
         }
 
         [HttpPost("login")]
@@ -39,11 +37,9 @@ namespace ChefAI.API.Controllers
 
             if (user == null)
             {
-                _logger.LogWarning("Registration attempt with existing email: {Email}", request.Email);
                 return BadRequest(new { message = "El email ya existe" });
             }
 
-            _logger.LogInformation("User registered successfully: {Email}", user.Email);
             return Ok(user);
         }
 
@@ -64,7 +60,6 @@ namespace ChefAI.API.Controllers
             var userIdClaim = User.FindFirst("sub") ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
-                _logger.LogWarning("Logout attempt with invalid user ID");
                 return BadRequest(new { message = "No se pudo obtener el ID del usuario" });
             }
 

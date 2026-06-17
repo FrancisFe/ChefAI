@@ -28,7 +28,7 @@ namespace ChefAI.Infraestructure.Repositories
 
         public async Task<UserProfile?> GetByUserIdAsync(int userId)
         {
-            return await _context.Profiles
+            return await _context.Profiles.Include(p => p.DietaryRestrictions)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
         }
 
