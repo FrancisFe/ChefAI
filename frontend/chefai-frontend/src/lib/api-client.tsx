@@ -70,9 +70,11 @@ export interface RecipeHistoryItem {
   }>;
 }
 
-export const getRecipesByUserId = async (userId: number): Promise<RecipeHistoryItem[]> => {
-  const response = await apiClient.get<RecipeHistoryItem[]>(`/recipe/user`, {
-    params: { userId },
+export const getRecipeHistory = async (): Promise<RecipeHistoryItem[]> => {
+  const response = await apiClient.get<RecipeHistoryItem[]>(`/recipe/user/history`, {
+    params: {
+      favoritesOnly: true
+    }
   });
   return response.data;
 };

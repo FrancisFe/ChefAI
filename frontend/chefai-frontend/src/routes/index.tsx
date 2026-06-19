@@ -3,6 +3,7 @@ import App from "../App";
 import LoginForm from "../features/auth/components/LoginForm";
 import RegisterForm from "../features/auth/components/RegisterForm";
 import ProtectedRoute from "../features/auth/components/ProtectedRoute";
+import ProfilePage from "../features/auth/components/ProfilePage";
 import RecipeGeneratorPage from "../features/recipes/components/RecipeGeneratorPage";
 import RecipeHistoryPage from "../features/recipes/components/RecipeHistoryPage";
 
@@ -23,6 +24,10 @@ export const router = createBrowserRouter([
       {
         path: "/recipe-history",
         element: <RecipeHistoryPage />,
+      },
+      {
+        path: "/profile",
+        element: <ProfilePage />,
       },
     ],
   },

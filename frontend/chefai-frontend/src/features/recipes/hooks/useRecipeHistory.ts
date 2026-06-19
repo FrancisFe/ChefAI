@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getRecipesByUserId, type RecipeHistoryItem } from "../../../lib/api-client";
+import { getRecipeHistory, type RecipeHistoryItem } from "../../../lib/api-client";
 import useAuthStore from "../../../store/authStore";
 
 export const useRecipeHistory = () => {
@@ -9,7 +9,7 @@ export const useRecipeHistory = () => {
     queryKey: ["recipes", "history", userId],
     queryFn: () => {
       if (!userId) throw new Error("User ID not found");
-      return getRecipesByUserId(userId);
+      return getRecipeHistory();
     },
     enabled: !!userId, // Solo ejecutar si tenemos userId
   });

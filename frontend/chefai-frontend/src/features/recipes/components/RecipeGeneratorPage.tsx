@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRecipeStream } from "../hooks/useRecipeStream";
 import { useDetectIngredients } from "../hooks/useDetectIngredients";
 import RecipeDisplay from "./RecipeDisplay";
+import RestrictionsChips from "./RestrictionsChips";
 
 export default function RecipeGeneratorPage() {
   const [input, setInput] = useState("");
@@ -79,6 +80,8 @@ export default function RecipeGeneratorPage() {
         value={input}
         onChange={(e) => setInput(e.target.value)}
       />
+
+      <RestrictionsChips />
 
       <input
         type="number"

@@ -24,6 +24,7 @@ function App() {
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
         <button onClick={() => navigate("/generate-recipe")}>Generar Receta</button>
         <button onClick={() => navigate("/recipe-history")}>Mi Historial</button>
+        <button onClick={() => navigate("/profile")}>Mi Perfil</button>
         <button onClick={() => useAuthStore.getState().logout()}>Logout</button>
       </div>
     </div>
