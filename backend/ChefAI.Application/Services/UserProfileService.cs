@@ -8,10 +8,16 @@ namespace ChefAI.Application.Services
     {
         private readonly IUserProfileRepository _userProfileRepository;
         private readonly IDietaryRestrictionRepository _dietaryRestriction;
-        public UserProfileService(IUserProfileRepository userProfileRepository, IDietaryRestrictionRepository dietaryRestrictionRepository)
+        private readonly IUserRepository _userRepository;
+
+        public UserProfileService(
+            IUserProfileRepository userProfileRepository,
+            IDietaryRestrictionRepository dietaryRestrictionRepository,
+            IUserRepository userRepository)
         {
             _userProfileRepository = userProfileRepository;
             _dietaryRestriction = dietaryRestrictionRepository;
+            _userRepository = userRepository;
         }
      
 
@@ -22,9 +28,11 @@ namespace ChefAI.Application.Services
             {
                 throw new KeyNotFoundException("User not found");
             }
+            var user = await _userRepository.GetByIdAsync(userId);
             var userProfileDto = new UserProfileDto
             {
                 Id = userProfile.Id,
+                Email = user?.Email ?? string.Empty,
                 PreferredDifficulty = userProfile.PreferredDifficulty,
                 MaxCookingTime = userProfile.MaxCookingTime,
                 DefaultServings = userProfile.DefaultServings,
@@ -48,11 +56,35 @@ namespace ChefAI.Application.Services
             userProfile.DefaultServings = updateDto.DefaultServings;
             userProfile.MaxCookingTime = updateDto.MaxCookingTime;
 
+            if (updateDto.DietaryRestrictions != null && updateDto.DietaryRestrictions.Any())
+            {
+
+                var selectedRestrictionNames = updateDto.DietaryRestrictions.Select(r => r.Name).ToList();
+                
+                
+                var allRestrictions = await _dietaryRestriction.GetAllAsync();
+                var selectedRestrictions = allRestrictions
+                    .Where(r => selectedRestrictionNames.Contains(r.Name))
+                    .ToList();
+
+               
+                userProfile.DietaryRestrictions.Clear();
+                foreach (var restriction in selectedRestrictions)
+                {
+                    userProfile.DietaryRestrictions.Add(restriction);
+                }
+            }
+            else
+            {
+                userProfile.DietaryRestrictions.Clear();
+            }
+
             await _userProfileRepository.UpdateAsync(userProfile);
 
             return new UserProfileDto
             {
                 Id = userProfile.Id,
+                Email = (await _userRepository.GetByIdAsync(userId))?.Email ?? string.Empty,
                 PreferredDifficulty = userProfile.PreferredDifficulty,
                 MaxCookingTime = userProfile.MaxCookingTime,
                 DefaultServings = userProfile.DefaultServings,

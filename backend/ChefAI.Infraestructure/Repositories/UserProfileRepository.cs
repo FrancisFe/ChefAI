@@ -21,14 +21,15 @@ namespace ChefAI.Infraestructure.Repositories
 
         public async Task<UserProfile> UpdateAsync(UserProfile profile)
         {
-            _context.Profiles.Update(profile);
             await _context.SaveChangesAsync();
             return profile;
         }
 
         public async Task<UserProfile?> GetByUserIdAsync(int userId)
         {
-            return await _context.Profiles.Include(p => p.DietaryRestrictions)
+            return await _context.Profiles
+                .Include(p => p.User)
+                .Include(p => p.DietaryRestrictions)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
         }
 

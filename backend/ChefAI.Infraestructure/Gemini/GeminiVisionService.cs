@@ -1,82 +1,87 @@
 ﻿using ChefAI.Application.Interfaces.Services;
+using Google.GenAI;
+using Google.GenAI.Types;
 using Microsoft.Extensions.Options;
-using System.Text;
 using System.Text.Json;
 
 namespace ChefAI.Infraestructure.Gemini
 {
     public class GeminiVisionService : IGeminiVisionService
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _apiKey;
+        private readonly Client _client;
+        private const string Model = "gemini-flash-lite-latest";
+        private const int MaxRetries = 3;
+        private const string Prompt =
+            "Identify all food ingredients visible in this image. " +
+            "Respond ONLY with a valid JSON array of strings, one per ingredient, in Spanish. " +
+            "Example: [\"tomate\", \"cebolla\", \"ajo\"]. " +
+            "If no food ingredients are visible, respond with an empty array: [].";
 
-        public GeminiVisionService(HttpClient httpClient, IOptions<GeminiSettings> config)
+        public GeminiVisionService(IOptions<GeminiSettings> config)
         {
-            _httpClient = httpClient;
-            _apiKey = config.Value.ApiKey;
+            _client = new Client(apiKey: config.Value.ApiKey);
         }
 
         public async Task<List<string>> AnalyzeAsync(byte[] imageByte)
         {
-            try
+            var contents = new List<Content>
             {
-                var base64Image = Convert.ToBase64String(imageByte);
-
-                string prompt = "Identify all food ingredients visible in this image. Respond ONLY with a valid JSON array of strings, one per ingredient, in Spanish. Example: [\"tomate\", \"cebolla\", \"ajo\"]. If no food ingredients are visible, respond with an empty array: [].";
-
-                var requestBody = new
+                new Content
                 {
-                    contents = new[]
-                {
-                    new
+                    Role = "user",
+                    Parts = new List<Part>
                     {
-                        parts = new object[]
+                        new Part { Text = Prompt },
+                        new Part
                         {
-                            new { text = prompt },
-                            new
+                            InlineData = new Blob
                             {
-                                inline_data = new
-                                {
-                                    mime_type = "image/jpeg",
-                                    data = base64Image
-                                }
+                                MimeType = "image/jpeg",
+                                Data = imageByte
                             }
                         }
                     }
                 }
-                };
+            };
 
-                var json = JsonSerializer.Serialize(requestBody);
+            var text = await SendWithRetryAsync(contents);
+            return ParseIngredients(text);
+        }
 
-                var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
-                using var request = new HttpRequestMessage(HttpMethod.Post, url);
-                request.Headers.Add("X-goog-api-key", _apiKey);
-                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+        private async Task<string> SendWithRetryAsync(List<Content> contents)
+        {
+            var delay = TimeSpan.FromSeconds(2);
 
-                var response = await _httpClient.SendAsync(request);
-                var responseString = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
+            for (int attempt = 1; attempt <= MaxRetries; attempt++)
+            {
+                try
                 {
-                    throw new Exception($"Error en la API de Gemini: {(int)response.StatusCode} {response.StatusCode}. Detalle: {responseString}");
+                    var response = await _client.Models.GenerateContentAsync(Model, contents);
+                    return response.Text ?? string.Empty;
                 }
+                catch (Exception ex) when (Is503(ex))
+                {
+                    if (attempt >= MaxRetries)
+                        throw new Exception("La API de Gemini no está disponible después de varios intentos. Intentá de nuevo en unos minutos.", ex);
 
-                using var document = JsonDocument.Parse(responseString);
-                var root = document.RootElement;
+                    await Task.Delay(delay);
+                    delay *= 2;
+                }
+            }
 
-                if (!root.TryGetProperty("candidates", out var candidatesElement) || candidatesElement.GetArrayLength() == 0)
-                    return new List<string>();
+            throw new Exception("La API de Gemini no está disponible después de varios intentos. Intentá de nuevo en unos minutos.");
+        }
 
-                var text = root
-                    .GetProperty("candidates")[0]
-                    .GetProperty("content")
-                    .GetProperty("parts")[0]
-                    .GetProperty("text")
-                    .GetString();
+        private static bool Is503(Exception ex) =>
+            ex.Message.Contains("503") || ex.Message.Contains("UNAVAILABLE");
 
-                if (string.IsNullOrWhiteSpace(text))
-                    return new List<string>();
+        private static List<string> ParseIngredients(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return new List<string>();
 
+            try
+            {
                 using var ingredientsDoc = JsonDocument.Parse(text);
                 var ingredientsArray = ingredientsDoc.RootElement;
                 var result = new List<string>();
@@ -100,11 +105,6 @@ namespace ChefAI.Infraestructure.Gemini
             {
                 throw new InvalidOperationException("Error al parsear la respuesta de Gemini. El formato JSON no es válido.", ex);
             }
-            catch (KeyNotFoundException ex)
-            {
-                throw new InvalidOperationException("Estructura inesperada en la respuesta de Gemini.", ex);
-            }
         }
     }
 }
-

@@ -19,14 +19,33 @@ namespace ChefAI.Infraestructure.Repositories
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<List<Recipe>> GetAllRecipesByUserId(int userId)
+        public async Task<List<Recipe>> GetAllRecipesByUserId(int userId, bool favoritesOnly)
         {
-            var recipes = await _context.Recipes
+            IQueryable<Recipe> query = _context.Recipes
                 .Where(r => r.UserId == userId)
-                .Include(r => r.Ingredients)
+                .Include(r => r.Ingredients);
+
+            if (favoritesOnly)
+            {
+                query = query.Where(r => r.IsFavorite);
+            }
+
+            return await query
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
-            return recipes;
+
+        }
+
+        public async Task<Recipe?> GetByIdAsync(int recipeId)
+        {
+            var recipe = await _context.Recipes
+                .Include(r => r.Ingredients)
+                .FirstOrDefaultAsync(r => r.Id == recipeId);
+            return recipe;
+        }
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

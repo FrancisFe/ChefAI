@@ -70,18 +70,32 @@ namespace ChefAI.API.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("user")]
-        public async Task<IActionResult> GetAllRecipesByUserId()
+        [HttpGet("user/history")]
+        public async Task<IActionResult> GetUserRecipeHistory([FromQuery] bool favoritesOnly = false)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
             if (userId == 0)
                 return Unauthorized("No user ID found in token");
 
-            var recipes = await _recipeService.GetAllRecipesByUserId(userId);
+            var recipes = await _recipeService.GetUserRecipeHistory(userId , favoritesOnly);
             return Ok(recipes);
         }
 
+        [HttpPost("{recipeId}/favorite")]
+        public async Task<IActionResult> AddFavorite(int recipeId)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            await _recipeService.AddFavorite(recipeId, userId);
+            return NoContent();
+        }
+        [HttpDelete("{recipeId}/favorite")]
+        public async Task<IActionResult> RemoveFavorite(int recipeId)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            await _recipeService.RemoveFavorite(recipeId, userId);
+            return NoContent();
+        }
         private static string EscapeSse(string value) => value
             .Replace("\r\n", "\\n")
             .Replace("\n", "\\n")

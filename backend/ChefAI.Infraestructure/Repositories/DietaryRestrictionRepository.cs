@@ -14,12 +14,12 @@ namespace ChefAI.Infraestructure.Repositories
         }
         public async Task<List<DietaryRestriction>> GetAllAsync()
         {
-            return await _context.DietaryRestrictions.AsNoTracking().ToListAsync();
+            return await _context.DietaryRestrictions.ToListAsync();
         }
 
         public async Task<DietaryRestriction?> GetByIdAsync(int id)
         {
-            return await _context.DietaryRestrictions.AsNoTracking().FirstOrDefaultAsync(dr => dr.Id == id);
+            return await _context.DietaryRestrictions.FirstOrDefaultAsync(dr => dr.Id == id);
         }
     }
 }

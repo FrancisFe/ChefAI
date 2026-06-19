@@ -105,8 +105,8 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, CloudinaryService>();
 builder.Services.AddScoped<IDietaryRestrictionService, DietaryRestrictionService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
-builder.Services.AddHttpClient<IGeminiVisionService, GeminiVisionService>();
-builder.Services.AddHttpClient<IGeminiRecipeService, GeminiRecipeService>();
+builder.Services.AddScoped<IGeminiVisionService, GeminiVisionService>();
+builder.Services.AddScoped<IGeminiRecipeService, GeminiRecipeService>();
 
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));

@@ -14,6 +14,7 @@ namespace ChefAI.Application.Services
         private readonly IRecipeTextParser _textParser;
         private readonly IRecipePromptBuilder _promptBuilder;
         private readonly IRecipeMapper _mapper;
+        private readonly IUserProfileRepository _userProfileRepository;
         private readonly ILogger<RecipeService> _logger;
 
         public RecipeService(
@@ -22,6 +23,7 @@ namespace ChefAI.Application.Services
             IRecipeTextParser textParser,
             IRecipePromptBuilder promptBuilder,
             IRecipeMapper mapper,
+            IUserProfileRepository userProfileRepository,
             ILogger<RecipeService> logger)
         {
             _geminiService = geminiService;
@@ -29,6 +31,7 @@ namespace ChefAI.Application.Services
             _textParser = textParser;
             _promptBuilder = promptBuilder;
             _mapper = mapper;
+            _userProfileRepository = userProfileRepository;
             _logger = logger;
         }
 
@@ -36,8 +39,9 @@ namespace ChefAI.Application.Services
             RecipeRequestDto request,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
+            var userProfile = await _userProfileRepository.GetByUserIdAsync(request.UserId);
             var systemPrompt = _promptBuilder.BuildSystemPrompt();
-            var userPrompt = _promptBuilder.BuildUserPrompt(request);
+            var userPrompt = _promptBuilder.BuildUserPrompt(request, userProfile?.DietaryRestrictions ?? []);
 
             _logger.LogInformation("Generando receta con ingredientes: {Ingredients}",
                 string.Join(", ", request.Ingredients));
@@ -127,11 +131,11 @@ namespace ChefAI.Application.Services
             }
         }
 
-        public async Task<List<AllRecipesByUserIdDto>> GetAllRecipesByUserId(int userId)
+        public async Task<List<AllRecipesByUserIdDto>> GetUserRecipeHistory(int userId , bool favoritesOnly)
         {
             _logger.LogInformation("Obteniendo recetas para usuario {UserId}", userId);
 
-            var recipes = await _recipeRepository.GetAllRecipesByUserId(userId);
+            var recipes = await _recipeRepository.GetAllRecipesByUserId(userId , favoritesOnly);
 
             var result = recipes.Select(r => new AllRecipesByUserIdDto
             {
@@ -154,6 +158,51 @@ namespace ChefAI.Application.Services
                 result.Count, userId);
 
             return result;
+        }
+
+        public async Task AddFavorite(int recipeId, int userId)
+        {
+            var recipe = await _recipeRepository.GetByIdAsync(recipeId);
+            if (recipe == null)
+            {
+                _logger.LogWarning("No se encontró la receta con ID {RecipeId} para marcar como favorita", recipeId);
+                throw new KeyNotFoundException($"Recipe {recipeId} not found");
+            }
+            if (recipe.UserId != userId)
+            {
+                _logger.LogWarning("El usuario {UserId} intentó marcar como favorita una receta que no le pertenece (ID {RecipeId})", userId, recipeId);
+                throw new UnauthorizedAccessException(
+            $"User {userId} does not own recipe {recipeId}");
+            }
+            recipe.IsFavorite = true;
+            await _recipeRepository.SaveChangesAsync();
+            _logger.LogInformation(
+       "Receta {RecipeId} marcada como favorita por usuario {UserId}",
+       recipeId,
+       userId);
+        }
+
+
+        public async Task RemoveFavorite(int recipeId, int userId)
+        {
+            var recipe = await _recipeRepository.GetByIdAsync(recipeId);
+            if (recipe == null)
+            {
+                _logger.LogWarning("No se encontró la receta con ID {RecipeId} para desmarcar como favorita", recipeId);
+                throw new KeyNotFoundException($"Recipe {recipeId} not found");
+            }
+            if (recipe.UserId != userId)
+            {
+                _logger.LogWarning("El usuario {UserId} intentó desmarcar como favorita una receta que no le pertenece (ID {RecipeId})", userId, recipeId);
+                throw new UnauthorizedAccessException(
+            $"User {userId} does not own recipe {recipeId}");
+            }
+            recipe.IsFavorite = false;
+            await _recipeRepository.SaveChangesAsync();
+            _logger.LogInformation(
+    "Receta {RecipeId} desmarcada como favorita por usuario {UserId}",
+    recipeId,
+    userId);
         }
     }
 }

@@ -1,30 +1,30 @@
 ﻿using ChefAI.Application.Interfaces.Services;
+using Google.GenAI;
+using Google.GenAI.Types;
 using Microsoft.Extensions.Configuration;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json;
 
 namespace ChefAI.Infraestructure.Gemini
 {
     public class GeminiRecipeService : IGeminiRecipeService
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _apiKey;
+        private readonly Client _client;
+        private const string Model = "gemini-flash-lite-latest";
+        private const int MaxRetries = 3;
 
-        public GeminiRecipeService(HttpClient httpClient, IConfiguration configuration)
+        public GeminiRecipeService(IConfiguration configuration)
         {
-            _httpClient = httpClient;
-            _apiKey = configuration["GeminiSettings:ApiKey"]
+            var apiKey = configuration["GeminiSettings:ApiKey"]
                 ?? throw new InvalidOperationException("No se encontró GeminiSettings:ApiKey en la configuración.");
+            _client = new Client(apiKey: apiKey);
         }
 
-        public async IAsyncEnumerable<string> GenerateContentAsync(string prompt, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<string> GenerateContentAsync(
+            string prompt,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var stream = CallGeminiStreaming(prompt, null, cancellationToken);
-            await foreach (var chunk in stream.WithCancellation(cancellationToken))
-            {
-                yield return chunk.Text;
-            }
+            await foreach (var chunk in StreamWithRetryAsync(prompt, null, cancellationToken))
+                yield return chunk;
         }
 
         public async IAsyncEnumerable<string> GenerateContentAsync(
@@ -32,125 +32,85 @@ namespace ChefAI.Infraestructure.Gemini
             string userPrompt,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var stream = CallGeminiStreaming(userPrompt, systemPrompt, cancellationToken);
-            await foreach (var chunk in stream.WithCancellation(cancellationToken))
-            {
-                yield return chunk.Text;
-            }
+            await foreach (var chunk in StreamWithRetryAsync(userPrompt, systemPrompt, cancellationToken))
+                yield return chunk;
         }
 
-        private async IAsyncEnumerable<GeminiTextChunk> CallGeminiStreaming(
+        private async IAsyncEnumerable<string> StreamWithRetryAsync(
             string userPrompt,
             string? systemPrompt,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var requestBody = new
+            var contents = new List<Content>
             {
-                systemInstruction = systemPrompt != null ? new { parts = new[] { new { text = systemPrompt } } } : null,
-                contents = new[]
+                new Content
                 {
-                    new
-                    {
-                        parts = new[]
-                        {
-                            new { text = userPrompt }
-                        }
-                    }
+                    Role = "user",
+                    Parts = new List<Part> { new Part { Text = userPrompt } }
                 }
             };
 
-            var jsonBody = JsonSerializer.Serialize(requestBody);
-            var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:streamGenerateContent?alt=sse";
-
-            var request = new HttpRequestMessage(HttpMethod.Post, url);
-            request.Headers.Add("X-goog-api-key", _apiKey);
-            request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-
-            using var response = await _httpClient.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken);
-
-            response.EnsureSuccessStatusCode();
-
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            using var reader = new StreamReader(stream);
-
-            while (!cancellationToken.IsCancellationRequested)
+            var config = new GenerateContentConfig();
+            if (systemPrompt is not null)
             {
-                var line = await reader.ReadLineAsync(cancellationToken);
-                if (line is null)
+                config.SystemInstruction = new Content
                 {
-                    yield break;
-                }
+                    Parts = new List<Part> { new Part { Text = systemPrompt } }
+                };
+            }
 
-                if (string.IsNullOrWhiteSpace(line) || !line.StartsWith("data:", StringComparison.Ordinal))
-                {
-                    continue;
-                }
+            var delay = TimeSpan.FromSeconds(2);
+            IAsyncEnumerator<GenerateContentResponse> enumerator = null!;
+            bool hasFirst = false;
 
-                var payload = line[5..].Trim();
-                if (payload == "[DONE]")
+            // El retry ocurre acá, solo en la conexión inicial (antes del primer chunk)
+            for (int attempt = 1; attempt <= MaxRetries; attempt++)
+            {
+                try
                 {
-                    yield break;
-                }
+                    enumerator = _client.Models
+                        .GenerateContentStreamAsync(Model, contents, config)
+                        .GetAsyncEnumerator(cancellationToken);
 
-                JsonElement root;
-                using (var document = JsonDocument.Parse(payload))
-                {
-                    root = document.RootElement.Clone();
+                    hasFirst = await enumerator.MoveNextAsync();
+                    break;
                 }
-
-                if (root.ValueKind == JsonValueKind.Array)
+                catch (Exception ex) when (Is503(ex))
                 {
-                    foreach (var item in root.EnumerateArray())
+                    if (enumerator is not null)
                     {
-                        foreach (var text in ExtractTexts(item))
-                        {
-                            yield return new GeminiTextChunk(text);
-                        }
+                        await enumerator.DisposeAsync();
+                        enumerator = null!;
                     }
 
-                    continue;
-                }
+                    if (attempt >= MaxRetries)
+                        throw new Exception("La API de Gemini no está disponible después de varios intentos. Intentá de nuevo en unos minutos.", ex);
 
-                foreach (var text in ExtractTexts(root))
-                {
-                    yield return new GeminiTextChunk(text);
+                    await Task.Delay(delay, cancellationToken);
+                    delay *= 2;
                 }
             }
-        }
 
-        private static IEnumerable<string> ExtractTexts(JsonElement root)
-        {
-            if (!root.TryGetProperty("candidates", out var candidates) || candidates.GetArrayLength() == 0)
-            {
+            if (!hasFirst || enumerator is null)
                 yield break;
-            }
 
-            foreach (var candidate in candidates.EnumerateArray())
+            try
             {
-                if (!candidate.TryGetProperty("content", out var content) ||
-                    !content.TryGetProperty("parts", out var parts) ||
-                    parts.ValueKind != JsonValueKind.Array)
+                do
                 {
-                    continue;
+                    var text = enumerator.Current.Text;
+                    if (!string.IsNullOrWhiteSpace(text))
+                        yield return text;
                 }
-
-                foreach (var part in parts.EnumerateArray())
-                {
-                    if (part.TryGetProperty("text", out var textElement))
-                    {
-                        var text = textElement.GetString();
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            yield return text;
-                        }
-                    }
-                }
+                while (await enumerator.MoveNextAsync());
+            }
+            finally
+            {
+                await enumerator.DisposeAsync();
             }
         }
 
-        private readonly record struct GeminiTextChunk(string Text);
+        private static bool Is503(Exception ex) =>
+            ex.Message.Contains("503") || ex.Message.Contains("UNAVAILABLE");
     }
 }
