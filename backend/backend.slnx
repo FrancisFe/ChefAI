@@ -1,6 +1,6 @@
 <Solution>
-  <Folder Name="/Chefai.Api/">
-    <Project Path="Chefai.Api/ChefAI.Api.csproj" StartupProject="true" />
+  <Folder Name="/ChefAI.API/">
+    <Project Path="ChefAI.API/ChefAI.API.csproj" StartupProject="true" />
   </Folder>
   <Project Path="ChefAI.Application/ChefAI.Application.csproj" />
   <Project Path="ChefAI.Domain/ChefAI.Domain.csproj" />

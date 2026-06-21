@@ -10,10 +10,10 @@ export function useDietaryRestrictions() {
   return useQuery({
     queryKey: ["dietary-restrictions"],
     queryFn: async () => {
-      const response = await apiClient.get("/DietaryRestrictions");
-      return (response.data as Array<{ name?: string; Name?: string; description?: string; Description?: string }>).map((item) => ({
-        name: item.name ?? item.Name ?? "",
-        description: item.description ?? item.Description ?? ""
+      const response = await apiClient.get<Array<{ name: string; description: string | null }>>("/DietaryRestrictions");
+      return response.data.map((item) => ({
+        name: item.name,
+        description: item.description ?? ""
       }));
     },
   });

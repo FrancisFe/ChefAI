@@ -30,7 +30,7 @@ namespace ChefAI.Application.Services
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
             {
                 _logger.LogWarning("Login attempt with empty email or password");
-                throw new Exception("Invalid credentials");
+                throw new UnauthorizedAccessException("Credenciales inválidas");
             }
 
             var email = request.Email.Trim().ToLower();
@@ -39,12 +39,12 @@ namespace ChefAI.Application.Services
             if (user == null)
             {
                 _logger.LogWarning("Failed login attempt");
-                throw new Exception("Invalid credentials");
+                throw new UnauthorizedAccessException("Credenciales inválidas");
             }
 
             if (!user.IsActive)
             {
-                throw new Exception("User is inactive");
+                throw new UnauthorizedAccessException("Usuario inactivo");
             }
 
             var passwordHasher = new PasswordHasher<User>();
@@ -53,7 +53,7 @@ namespace ChefAI.Application.Services
             if (result == PasswordVerificationResult.Failed)
             {
                 _logger.LogWarning("Failed login attempt");
-                throw new Exception("Invalid credentials");
+                throw new UnauthorizedAccessException("Credenciales inválidas");
             }
 
             if (user.TokenExpires.HasValue && user.TokenExpires < DateTimeOffset.UtcNow)

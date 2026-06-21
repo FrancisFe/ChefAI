@@ -21,7 +21,7 @@ export function useUpdateProfile() {
       return response.data as UserProfile;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
     },
     onError: (error) => {
       console.error("Failed to update profile:", error);

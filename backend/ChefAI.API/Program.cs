@@ -1,6 +1,8 @@
 using ChefAI.API.Middleware;
 using ChefAI.Application.Interfaces.Repositories;
 using ChefAI.Application.Interfaces.Services;
+using ChefAI.Application.Helpers;
+using ChefAI.Application.Mappers;
 using ChefAI.Application.Services;
 using ChefAI.Infraestructure.CloudinaryServices;
 using ChefAI.Infraestructure.Data;
@@ -114,18 +116,17 @@ builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection("Gem
 var app = builder.Build();
 
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
+app.UseAuthentication();
+app.UseAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseHttpsRedirection();
-app.UseCors("AllowFrontend");
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
 
 app.Run();

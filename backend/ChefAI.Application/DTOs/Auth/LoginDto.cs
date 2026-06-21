@@ -1,8 +1,12 @@
-﻿namespace ChefAI.Application.DTOs.Auth
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ChefAI.Application.DTOs.Auth
 {
     public class LoginDto
     {
-        public string? Email { get; set; }
-        public string? Password { get; set; }
+        [Required(ErrorMessage = "El email es requerido")]
+        public string Email { get; set; } = string.Empty;
+        [Required(ErrorMessage = "La contraseña es requerida")]
+        public string Password { get; set; } = string.Empty;
     }
 }

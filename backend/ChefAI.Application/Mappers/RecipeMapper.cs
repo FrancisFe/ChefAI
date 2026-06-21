@@ -1,7 +1,7 @@
 using ChefAI.Application.DTOs.Recipe;
 using ChefAI.Domain.Entities;
 
-namespace ChefAI.Application.Services
+namespace ChefAI.Application.Mappers
 {
     public interface IRecipeMapper
     {

@@ -13,18 +13,12 @@ export interface UserProfile {
 }
 
 interface UserProfileApiResponse {
-  id?: number;
-  Id?: number;
-  email?: string;
-  Email?: string;
-  dietaryRestrictions?: Array<{ name?: string; Name?: string; description?: string; Description?: string }>;
-  DietaryRestrictions?: Array<{ name?: string; Name?: string; description?: string; Description?: string }>;
-  preferredDifficulty?: string;
-  PreferredDifficulty?: string;
-  maxCookingTime?: string;
-  MaxCookingTime?: string;
-  defaultServings?: number;
-  DefaultServings?: number;
+  id: number;
+  email: string;
+  dietaryRestrictions: Array<{ name: string; description: string | null }>;
+  preferredDifficulty: string;
+  maxCookingTime: string;
+  defaultServings: number;
 }
 
 export function useProfile() {
@@ -36,17 +30,16 @@ export function useProfile() {
     queryFn: async () => {
       const response = await apiClient.get(`/UserProfiles/${userId}`);
       const data = response.data as UserProfileApiResponse;
-      const restrictions = data.dietaryRestrictions ?? data.DietaryRestrictions ?? [];
       return {
-        id: data.id ?? data.Id ?? 0,
-        email: data.email ?? data.Email ?? "",
-        dietaryRestrictions: restrictions.map((dr) => ({
-          name: dr.name ?? dr.Name ?? "",
-          description: dr.description ?? dr.Description ?? ""
+        id: data.id,
+        email: data.email,
+        dietaryRestrictions: data.dietaryRestrictions.map((dr) => ({
+          name: dr.name,
+          description: dr.description ?? ""
         })),
-        preferredDifficulty: data.preferredDifficulty ?? data.PreferredDifficulty ?? "",
-        maxCookingTime: data.maxCookingTime ?? data.MaxCookingTime ?? "00:00:00",
-        defaultServings: data.defaultServings ?? data.DefaultServings ?? 1,
+        preferredDifficulty: data.preferredDifficulty,
+        maxCookingTime: data.maxCookingTime,
+        defaultServings: data.defaultServings,
       } as UserProfile;
     },
   });

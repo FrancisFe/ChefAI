@@ -2,7 +2,7 @@ using ChefAI.Application.DTOs.Recipe;
 using ChefAI.Domain.Entities;
 using System.Text;
 
-namespace ChefAI.Application.Services
+namespace ChefAI.Application.Helpers
 {
     public interface IRecipePromptBuilder
     {

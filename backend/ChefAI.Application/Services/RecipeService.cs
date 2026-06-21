@@ -1,6 +1,8 @@
 using ChefAI.Application.DTOs.Recipe;
+using ChefAI.Application.Helpers;
 using ChefAI.Application.Interfaces.Repositories;
 using ChefAI.Application.Interfaces.Services;
+using ChefAI.Application.Mappers;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -139,11 +141,14 @@ namespace ChefAI.Application.Services
 
             var result = recipes.Select(r => new AllRecipesByUserIdDto
             {
+                Id = r.Id,
                 Title = r.Title,
                 Description = r.Description,
                 CookingTime = r.CookingTime,
                 Servings = r.Servings,
                 IsFavorite = r.IsFavorite,
+                CreatedAt = r.CreatedAt,
+                Steps = r.Steps,
                 Ingredients = r.Ingredients
                     .Select(i => new AllRecipeIngredientDto
                     {

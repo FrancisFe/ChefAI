@@ -2,7 +2,7 @@ using ChefAI.Application.DTOs.Recipe;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
-namespace ChefAI.Application.Services
+namespace ChefAI.Application.Helpers
 {
     public interface IRecipeTextParser
     {

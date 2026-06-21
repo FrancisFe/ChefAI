@@ -1,6 +1,48 @@
 @ChefAI.API_HostAddress = http://localhost:5010
 
-GET {{ChefAI.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Auth
+POST {{ChefAI.API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Test123!",
+  "confirmPassword": "Test123!"
+}
+
+###
+
+POST {{ChefAI.API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Test123!"
+}
+
+###
+
+### Recipes
+POST {{ChefAI.API_HostAddress}}/api/recipe/generate
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "ingredients": ["pollo", "arroz", "cebolla"],
+  "userId": 1,
+  "servings": 2,
+  "maxCookingTimeMinutes": 30,
+  "difficulty": "easy"
+}
+
+###
+
+GET {{ChefAI.API_HostAddress}}/api/recipe/user/history
+Authorization: Bearer {{token}}
+
+###
+
+### Dietary Restrictions
+GET {{ChefAI.API_HostAddress}}/api/DietaryRestrictions
 
 ###

@@ -3,6 +3,8 @@ using ChefAI.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+namespace ChefAI.API.Controllers;
+
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]

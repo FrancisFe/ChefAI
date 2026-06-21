@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
 import { useAuthRedirect } from "../hooks/useAuthRedirect";
 
@@ -18,14 +18,14 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     return (
         <form onSubmit={handleSubmit}>
 
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}required />
+                <input type="email" placeholder="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)}required />
 
             <div>
-                <label htmlFor="password">Password:</label>
-                <input type="password" placeholder="Password" id="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <label htmlFor="password">Contraseña:</label>
+                <input type="password" placeholder="Contraseña" id="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
             <button type="submit" disabled={isPending}>
-                {isPending ? "Cargando..." : "Login"}
+                {isPending ? "Cargando..." : "Iniciar sesión"}
             </button>
             {error && <p>Error al loguear</p>}
         </form>
