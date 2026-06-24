@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDietaryRestrictions } from "../hooks/useDietaryRestrictions";
 import { useProfile } from "../hooks/useProfile";
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
+import BadgeGrid from "../../gamification/components/BadgeGrid";
 
 function timeSpanToMinutes(ts: string): number {
   const parts = ts.split(":");
@@ -173,6 +174,11 @@ export default function ProfilePage() {
       >
         {isUpdating ? "Guardando..." : "Guardar"}
       </button>
+
+      <div style={{ marginTop: "32px" }}>
+        <h2>Mis Badges</h2>
+        <BadgeGrid />
+      </div>
     </div>
   );
 }

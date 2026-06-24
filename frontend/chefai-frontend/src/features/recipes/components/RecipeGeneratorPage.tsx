@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useRecipeStream } from "../hooks/useRecipeStream";
 import { useDetectIngredients } from "../hooks/useDetectIngredients";
 import { useRecipeHistory } from "../hooks/useRecipeHistory";
@@ -18,7 +19,7 @@ export default function RecipeGeneratorPage() {
 
   const queryClient = useQueryClient();
 
-  const { recipe, isStreaming, error, startStream } = useRecipeStream();
+  const { recipe, isStreaming, error, gamificationResult, startStream } = useRecipeStream();
   const { detectFromImage, isDetecting, error: detectError } = useDetectIngredients();
   const { data: historyRecipes } = useRecipeHistory();
   const { addFavorite, removeFavorite } = useToggleFavorite();
@@ -33,6 +34,47 @@ export default function RecipeGeneratorPage() {
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
     }
   }, [isStreaming, recipe, queryClient]);
+
+  useEffect(() => {
+    if (!gamificationResult) return;
+
+    if (gamificationResult.pointsEarned > 0) {
+      toast.success(`+${gamificationResult.pointsEarned} puntos`, {
+        description: `Nivel ${gamificationResult.currentLevel} — ${gamificationResult.totalPoints} pts totales`,
+        duration: 4000,
+      });
+    }
+
+    for (const badge of gamificationResult.badges) {
+      toast.custom(
+        (_t) => (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "12px 16px",
+              borderRadius: "10px",
+              border: "1px solid var(--accent-border)",
+              background: "var(--accent-bg)",
+              boxShadow: "var(--shadow)",
+            }}
+          >
+            <span style={{ fontSize: "32px" }}>🏅</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: "15px", color: "var(--text-h)" }}>
+                ¡Nuevo badge desbloqueado!
+              </div>
+              <div style={{ fontSize: "13px", color: "var(--text)", marginTop: "2px" }}>
+                {badge.badgeName ?? ""}
+              </div>
+            </div>
+          </div>
+        ),
+        { duration: 6000 }
+      );
+    }
+  }, [gamificationResult]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -6,8 +6,9 @@
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public string IconUrl { get; set; } = string.Empty;
+        public string Condition { get; set; } = string.Empty;
+        public int? ConditionValue { get; set; }
 
         public List<UserBadge> UserBadges { get; set; } = new();
-
     }
 }

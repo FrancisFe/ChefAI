@@ -7,8 +7,8 @@
         public string PreferredDifficulty { get; set; } = string.Empty;
         public TimeSpan MaxCookingTime { get; set; } = TimeSpan.Zero;
         public int DefaultServings { get; set; }
+        public bool HasUsedPhotoDetection { get; set; }
         public int UserId { get; set; }
         public User User { get; set; } = null!;
-
     }
 }

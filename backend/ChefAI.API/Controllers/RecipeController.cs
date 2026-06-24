@@ -46,8 +46,6 @@ namespace ChefAI.API.Controllers
                     await Response.Body.FlushAsync(cancellationToken);
                 }
 
-                await Response.WriteAsync("data: [DONE]\n\n", cancellationToken);
-                await Response.Body.FlushAsync(cancellationToken);
             }
             catch (OperationCanceledException)
             {

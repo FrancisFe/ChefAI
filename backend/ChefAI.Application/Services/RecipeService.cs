@@ -1,11 +1,14 @@
+using ChefAI.Application.DTOs;
 using ChefAI.Application.DTOs.Recipe;
 using ChefAI.Application.Helpers;
 using ChefAI.Application.Interfaces.Repositories;
 using ChefAI.Application.Interfaces.Services;
 using ChefAI.Application.Mappers;
+using ChefAI.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 
 namespace ChefAI.Application.Services
 {
@@ -17,6 +20,7 @@ namespace ChefAI.Application.Services
         private readonly IRecipePromptBuilder _promptBuilder;
         private readonly IRecipeMapper _mapper;
         private readonly IUserProfileRepository _userProfileRepository;
+        private readonly IGamificacionService _gamificacionService;
         private readonly ILogger<RecipeService> _logger;
 
         public RecipeService(
@@ -26,6 +30,7 @@ namespace ChefAI.Application.Services
             IRecipePromptBuilder promptBuilder,
             IRecipeMapper mapper,
             IUserProfileRepository userProfileRepository,
+            IGamificacionService gamificacionService,
             ILogger<RecipeService> logger)
         {
             _geminiService = geminiService;
@@ -34,6 +39,7 @@ namespace ChefAI.Application.Services
             _promptBuilder = promptBuilder;
             _mapper = mapper;
             _userProfileRepository = userProfileRepository;
+            _gamificacionService = gamificacionService;
             _logger = logger;
         }
 
@@ -89,6 +95,27 @@ namespace ChefAI.Application.Services
             if (!cancellationToken.IsCancellationRequested)
             {
                 await SaveGeneratedRecipeAsync(fullContent.ToString(), request, cancellationToken);
+
+                var pointsResult = await _gamificacionService.AddPoints(request.UserId, GamificationAction.GenerateRecipe);
+                await _gamificacionService.UpdateStreak(request.UserId);
+                var badges = await _gamificacionService.EvaluateBadges(request.UserId);
+
+                yield return "[DONE]";
+
+                var gamificationPayload = new
+                {
+                    pointsEarned = pointsResult.PointsEarned,
+                    totalPoints = pointsResult.TotalPoints,
+                    currentLevel = pointsResult.CurrentLevel,
+                    badges = badges.Select(b => new
+                    {
+                        badgeUnlocked = b.BadgeUnlocked,
+                        badgeName = b.BadgeName,
+                        badgeIcon = b.BadgeIcon
+                    })
+                };
+
+                yield return JsonSerializer.Serialize(gamificationPayload);
             }
         }
 

@@ -18,6 +18,8 @@ namespace ChefAI.Infraestructure.Configs
                    .IsRequired();
             builder.Property(up => up.DefaultServings)
                    .IsRequired();
+            builder.Property(up => up.HasUsedPhotoDetection)
+                   .HasDefaultValue(false);
 
             builder.HasOne(up => up.User)
                    .WithOne(u => u.UserProfile)

@@ -228,11 +228,19 @@ function parseQuantityAndUnit(
   return ingredient;
 }
 
+export interface GamificationResult {
+  pointsEarned: number;
+  totalPoints: number;
+  currentLevel: number;
+  badges: { badgeUnlocked: boolean; badgeName: string | null; badgeIcon: string | null }[];
+}
+
 export function useRecipeStream() {
   const [text, setText] = useState("");
   const [recipe, setRecipe] = useState<GeneratedRecipe | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [gamificationResult, setGamificationResult] = useState<GamificationResult | null>(null);
   const token = useAuthStore((s) => s.token);
   const userId = useAuthStore((s) => s.userId);
 
@@ -244,10 +252,12 @@ export function useRecipeStream() {
 
     setText("");
     setRecipe(null);
+    setGamificationResult(null);
     setIsStreaming(true);
     setError(null);
 
     let accumulated = "";
+    let recipeDone = false;
 
     try {
       const response = await fetch(
@@ -280,7 +290,7 @@ export function useRecipeStream() {
 
           const data = line.replace("data:", "").trim();
 
-          if (data === "[DONE]") {
+          if (!recipeDone && data === "[DONE]") {
             try {
               const parsedRecipe = parseRecipeFromText(accumulated);
               if (parsedRecipe) {
@@ -290,6 +300,17 @@ export function useRecipeStream() {
               }
             } catch {
               setError("Error al procesar la receta");
+            }
+            recipeDone = true;
+            continue;
+          }
+
+          if (recipeDone) {
+            try {
+              const parsed = JSON.parse(data);
+              setGamificationResult(parsed as GamificationResult);
+            } catch {
+              // ignore malformed gamification payload
             }
             setIsStreaming(false);
             return;
@@ -306,5 +327,5 @@ export function useRecipeStream() {
     }
   };
 
-  return { text, recipe, isStreaming, error, startStream };
+  return { text, recipe, isStreaming, error, gamificationResult, startStream };
 }
