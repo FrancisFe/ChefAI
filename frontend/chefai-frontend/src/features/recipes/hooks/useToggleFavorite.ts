@@ -7,6 +7,7 @@ export function useToggleFavorite() {
 
   const invalidateRecipes = () => {
     queryClient.invalidateQueries({ queryKey: ["recipes"] });
+    queryClient.invalidateQueries({ queryKey: ["gamification", "points"] });
   };
 
   const add = useMutation({

@@ -102,11 +102,15 @@ namespace ChefAI.Application.Services
 
                 yield return "[DONE]";
 
+                var previousTotal = pointsResult.TotalPoints - pointsResult.PointsEarned;
+                var leveledUp = previousTotal / 50 < pointsResult.CurrentLevel;
+
                 var gamificationPayload = new
                 {
                     pointsEarned = pointsResult.PointsEarned,
                     totalPoints = pointsResult.TotalPoints,
                     currentLevel = pointsResult.CurrentLevel,
+                    leveledUp,
                     badges = badges.Select(b => new
                     {
                         badgeUnlocked = b.BadgeUnlocked,
@@ -206,8 +210,23 @@ namespace ChefAI.Application.Services
                 throw new UnauthorizedAccessException(
             $"User {userId} does not own recipe {recipeId}");
             }
+            if (recipe.IsFavorite)
+            {
+                _logger.LogInformation("Receta {RecipeId} ya estaba marcada como favorita", recipeId);
+                return;
+            }
+
             recipe.IsFavorite = true;
+
+            if (!recipe.HasAwardedFavoritePoints)
+            {
+                await _gamificacionService.AddPoints(userId, GamificationAction.MarkFavorite);
+                await _gamificacionService.EvaluateBadges(userId);
+                recipe.HasAwardedFavoritePoints = true;
+            }
+
             await _recipeRepository.SaveChangesAsync();
+
             _logger.LogInformation(
        "Receta {RecipeId} marcada como favorita por usuario {UserId}",
        recipeId,

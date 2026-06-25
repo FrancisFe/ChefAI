@@ -14,14 +14,17 @@ namespace ChefAI.Application.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserProfileRepository _userProfileRepository;
+        private readonly IUserPointsRepository _userPointsRepository;
         private readonly ILogger<AuthService> _logger;
         private readonly ITokenService _tokenService;
+        
         public AuthService(
-           IUserRepository userRepository, IUserProfileRepository userProfileRepository,
+           IUserRepository userRepository, IUserProfileRepository userProfileRepository, IUserPointsRepository userPointsRepository,
            ILogger<AuthService> logger, ITokenService tokenService)
         {
             _userRepository = userRepository;
             _userProfileRepository = userProfileRepository;
+            _userPointsRepository = userPointsRepository;
             _logger = logger;
             _tokenService = tokenService;
         }
@@ -99,7 +102,13 @@ namespace ChefAI.Application.Services
 
 
             await _userRepository.AddAsync(user);
+            await _userPointsRepository.AddAsync(new UserPoints
+            {
+                UserId = user.Id,
+                TotalPoints = 0
+            });
             await CreateDefaultUserProfileAsync(user.Id);
+            
             _logger.LogInformation("User {Email} registered successfully", user.Email);
             return new UserDto
             {

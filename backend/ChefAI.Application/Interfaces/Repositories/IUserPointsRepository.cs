@@ -6,5 +6,6 @@ namespace ChefAI.Application.Interfaces.Repositories
     {
         Task<UserPoints?> GetByUserIdAsync(int userId);
         Task UpdateAsync(UserPoints userPoints);
+        Task<UserPoints> AddAsync(UserPoints userPoints);
     }
 }

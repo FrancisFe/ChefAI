@@ -23,6 +23,8 @@ namespace ChefAI.Infraestructure.Configs
                    .IsRequired();
             builder.Property(r => r.IsFavorite)
                    .IsRequired();
+            builder.Property(r => r.HasAwardedFavoritePoints)
+                   .IsRequired();
             builder.Property(r => r.CreatedAt)
                    .IsRequired();
             builder.Property(r => r.Steps)

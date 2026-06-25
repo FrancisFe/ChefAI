@@ -14,13 +14,18 @@ namespace ChefAI.Infraestructure.Repositories
         }
         public async Task<UserPoints?> GetByUserIdAsync(int userId)
         {
-            var userPoints = await _context.UserPoints.FirstOrDefaultAsync(up => up.UserId == userId);
-            return userPoints;
+            return await _context.UserPoints.FirstOrDefaultAsync(up => up.UserId == userId);
         }
 
         public async Task UpdateAsync(UserPoints userPoints)
         {
             await _context.SaveChangesAsync();
+        }
+        public async Task<UserPoints> AddAsync(UserPoints userPoints)
+        {
+            _context.UserPoints.Add(userPoints);
+            await _context.SaveChangesAsync();
+            return userPoints;
         }
     }
 }

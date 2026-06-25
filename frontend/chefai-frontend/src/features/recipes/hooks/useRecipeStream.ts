@@ -232,6 +232,7 @@ export interface GamificationResult {
   pointsEarned: number;
   totalPoints: number;
   currentLevel: number;
+  leveledUp?: boolean;
   badges: { badgeUnlocked: boolean; badgeName: string | null; badgeIcon: string | null }[];
 }
 

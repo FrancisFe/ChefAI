@@ -6,7 +6,7 @@ export default function PointsBar() {
   if (!data) return null;
 
   const { totalPoints, currentStreak, currentLevel } = data;
-  const showFireAnimation = currentStreak > 3;
+  const showFireAnimation = currentStreak >= 5;
 
   return (
     <>
@@ -35,19 +35,21 @@ export default function PointsBar() {
         <span style={{ color: "var(--text)" }}>
           {totalPoints} pts
         </span>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "4px" }}>
-          <span
-            style={{
-              display: "inline-block",
-              animation: showFireAnimation ? "fire-flicker 0.6s ease-in-out infinite" : "none",
-              fontSize: "18px",
-            }}
-          >
-            🔥
-          </span>
-          <span style={{ color: "var(--text-h)", fontWeight: 600 }}>{currentStreak}</span>
-          <span style={{ color: "var(--text)" }}>días</span>
-        </div>
+        {currentStreak >= 5 && (
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "4px" }}>
+            <span
+              style={{
+                display: "inline-block",
+                animation: showFireAnimation ? "fire-flicker 0.6s ease-in-out infinite" : "none",
+                fontSize: "18px",
+              }}
+            >
+              🔥
+            </span>
+            <span style={{ color: "var(--text-h)", fontWeight: 600 }}>{currentStreak}</span>
+            <span style={{ color: "var(--text)" }}>días</span>
+          </div>
+        )}
       </div>
     </>
   );

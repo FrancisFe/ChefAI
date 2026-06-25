@@ -8,6 +8,7 @@
         public TimeSpan CookingTime { get; set; }
         public int Servings { get; set; }
         public bool IsFavorite { get; set; }
+        public bool HasAwardedFavoritePoints { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string Steps { get; set; } = string.Empty;
         public List<RecipeIngredient> Ingredients { get; set; } = new();

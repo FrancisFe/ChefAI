@@ -32,6 +32,7 @@ export default function RecipeGeneratorPage() {
   useEffect(() => {
     if (!isStreaming && recipe) {
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      queryClient.invalidateQueries({ queryKey: ["gamification", "points"] });
     }
   }, [isStreaming, recipe, queryClient]);
 
@@ -42,6 +43,12 @@ export default function RecipeGeneratorPage() {
       toast.success(`+${gamificationResult.pointsEarned} puntos`, {
         description: `Nivel ${gamificationResult.currentLevel} — ${gamificationResult.totalPoints} pts totales`,
         duration: 4000,
+      });
+    }
+
+    if (gamificationResult.leveledUp) {
+      toast.success(`¡Subiste al nivel ${gamificationResult.currentLevel}!`, {
+        duration: 5000,
       });
     }
 
