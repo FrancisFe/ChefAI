@@ -1,17 +1,9 @@
 import { useEffect, useState } from "react";
 import type { GeneratedRecipe } from "../hooks/useRecipeStream";
-import { useToggleFavorite } from "../hooks/useToggleFavorite";
 
 const sections = ["title", "description", "meta", "ingredients", "steps"] as const;
 
-interface RecipeDisplayProps {
-  recipe: GeneratedRecipe;
-  recipeId?: number;
-  isFavorite?: boolean;
-}
-
-export default function RecipeDisplay({ recipe, recipeId, isFavorite = false }: RecipeDisplayProps) {
-  const { addFavorite, removeFavorite } = useToggleFavorite();
+export default function RecipeDisplay({ recipe }: { recipe: GeneratedRecipe }) {
   const [visibleIndex, setVisibleIndex] = useState(-1);
 
   useEffect(() => {
@@ -39,31 +31,7 @@ export default function RecipeDisplay({ recipe, recipeId, isFavorite = false }: 
       `}</style>
 
       <div className={`fade-section ${visible(0) ? "show" : ""}`}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2>{recipe.title}</h2>
-          {recipeId && (
-            <button
-              onClick={() =>
-                isFavorite
-                  ? removeFavorite.mutate(recipeId)
-                  : addFavorite.mutate(recipeId)
-              }
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "28px",
-                lineHeight: 1,
-                padding: 0,
-                color: isFavorite ? "#e74c3c" : "#999",
-                transition: "transform 0.2s",
-              }}
-              title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
-            >
-              {isFavorite ? "♥" : "♡"}
-            </button>
-          )}
-        </div>
+        <h2>{recipe.title}</h2>
       </div>
 
       <div className={`fade-section ${visible(1) ? "show" : ""}`}>

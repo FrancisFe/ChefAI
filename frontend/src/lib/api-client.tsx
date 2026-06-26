@@ -58,14 +58,11 @@ apiClient.interceptors.response.use(
 
 // Recipe API endpoints
 export interface RecipeHistoryItem {
-  id: number;
   title: string;
   description: string;
   cookingTime: number;
   servings: number;
   isFavorite: boolean;
-  createdAt: string;
-  steps: string;
   ingredients: Array<{
     name: string;
     quantity: number | null;
@@ -73,22 +70,11 @@ export interface RecipeHistoryItem {
   }>;
 }
 
-export const getRecipeHistory = async (favoritesOnly = false): Promise<RecipeHistoryItem[]> => {
-  const response = await apiClient.get<RecipeHistoryItem[]>(`/recipe/user/history`, {
-    params: {
-      favoritesOnly
-    }
+export const getRecipesByUserId = async (userId: number): Promise<RecipeHistoryItem[]> => {
+  const response = await apiClient.get<RecipeHistoryItem[]>(`/recipe/user`, {
+    params: { userId },
   });
   return response.data;
-};
-
-// Favorite endpoints
-export const addFavorite = async (recipeId: number): Promise<void> => {
-  await apiClient.post(`/recipe/${recipeId}/favorite`);
-};
-
-export const removeFavorite = async (recipeId: number): Promise<void> => {
-  await apiClient.delete(`/recipe/${recipeId}/favorite`);
 };
 
 // Detect ingredients from image

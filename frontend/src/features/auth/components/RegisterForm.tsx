@@ -26,25 +26,25 @@ export default function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Registrarse</h2>
+      <h2>Register</h2>
 
       <input
         type="email"
-        placeholder="Correo electrónico"
+        placeholder="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
 
       <input
         type="password"
-        placeholder="Contraseña"
+        placeholder="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
 
       <input
         type="password"
-        placeholder="Confirmar contraseña"
+        placeholder="confirm password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
       />

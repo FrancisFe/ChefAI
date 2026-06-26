@@ -4,12 +4,18 @@ import useAuthStore from "./store/authStore";
 import './App.css'
 
 function App() {
-  const syncAuthState = useAuthStore((s) => s.syncAuthState);
+  const {syncAuthState, isLoggedIn} = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     syncAuthState();
   }, [syncAuthState]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate]);
   
   return (
     <div>
@@ -18,9 +24,7 @@ function App() {
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
         <button onClick={() => navigate("/generate-recipe")}>Generar Receta</button>
         <button onClick={() => navigate("/recipe-history")}>Mi Historial</button>
-        <button onClick={() => navigate("/favorites")}>Mis Favoritos</button>
-        <button onClick={() => navigate("/profile")}>Mi Perfil</button>
-        <button onClick={() => useAuthStore.getState().logout()}>Cerrar sesión</button>
+        <button onClick={() => useAuthStore.getState().logout()}>Logout</button>
       </div>
     </div>
   )
