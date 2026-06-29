@@ -6,12 +6,14 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { queryClient } from './lib/query-client.tsx'
 import { RouterProvider } from 'react-router-dom'
 import { router } from './routes/index.tsx'
+import { Toaster } from 'sonner'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
   <QueryClientProvider client={queryClient}>
     <RouterProvider router={router} />
     <ReactQueryDevtools initialIsOpen={false} />
+    <Toaster position="bottom-right" richColors />
   </QueryClientProvider>
   </StrictMode>,
 )

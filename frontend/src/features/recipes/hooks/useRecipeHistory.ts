@@ -1,16 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { getRecipesByUserId, type RecipeHistoryItem } from "../../../lib/api-client";
-import useAuthStore from "../../../store/authStore";
+import { getRecipeHistory, type RecipeHistoryItem } from "../../../lib/api-client";
 
-export const useRecipeHistory = () => {
-  const userId = useAuthStore((s) => s.userId);
-
+export const useRecipeHistory = (favoritesOnly = false) => {
   return useQuery<RecipeHistoryItem[]>({
-    queryKey: ["recipes", "history", userId],
-    queryFn: () => {
-      if (!userId) throw new Error("User ID not found");
-      return getRecipesByUserId(userId);
-    },
-    enabled: !!userId, // Solo ejecutar si tenemos userId
+    queryKey: ["recipes", favoritesOnly ? "favorites" : "history"],
+    queryFn: () => getRecipeHistory(favoritesOnly),
   });
 };

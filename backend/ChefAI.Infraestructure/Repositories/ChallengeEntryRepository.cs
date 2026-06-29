@@ -1,4 +1,5 @@
 using ChefAI.Application.Interfaces.Repositories;
+using ChefAI.Domain.Entities;
 using ChefAI.Infraestructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,12 @@ namespace ChefAI.Infraestructure.Repositories
             return await _context.ChallengeEntries
                 .Where(ce => ce.UserId == userId)
                 .SumAsync(ce => ce.VoteCount);
+        }
+
+        public async Task AddAsync(ChallengeEntry entry)
+        {
+            await _context.ChallengeEntries.AddAsync(entry);
+            await _context.SaveChangesAsync();
         }
     }
 }

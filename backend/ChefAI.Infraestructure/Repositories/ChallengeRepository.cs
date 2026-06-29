@@ -13,25 +13,42 @@ namespace ChefAI.Infraestructure.Repositories
         {
             _context = context;
         }
-        public async Task<ChallengeEntry?> GetActiveAsync()
-        {
-            return await _context.ChallengeEntries
-                .Where(ce => ce.Challenge.Status == ChallengeStatus.Active && ce.Challenge.StartDate <= DateTime.Now && ce.Challenge.EndDate >= DateTime.Now).FirstOrDefaultAsync();
 
+        public async Task<Challenge?> GetActiveAsync()
+        {
+            return await _context.Challenges
+                .Include(c => c.StarIngredient)
+                .Where(c => c.Status == ChallengeStatus.Active
+                    && c.StartDate <= DateTime.Now
+                    && c.EndDate >= DateTime.Now)
+                .FirstOrDefaultAsync();
         }
 
-        public async Task<ChallengeEntry?> GetByIdAsync(int id)
+        public async Task<Challenge?> GetByIdAsync(int id)
         {
-            return await _context.ChallengeEntries
-                .Include(ce => ce.Challenge)
-                .Include(ce => ce.User)
-                .FirstOrDefaultAsync(ce => ce.Id == id);
+            return await _context.Challenges
+                .Include(c => c.StarIngredient)
+                .Include(c => c.Entries)
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public async Task<bool> HasUserParticipatedAsync(int challengeId, int userId)
+        public async Task<List<Challenge>> GetAllAsync()
         {
-            return await _context.ChallengeEntries
-                .AnyAsync(ce => ce.ChallengeId == challengeId && ce.UserId == userId);
+            return await _context.Challenges
+                .Include(c => c.StarIngredient)
+                .OrderByDescending(c => c.StartDate)
+                .ToListAsync();
+        }
+
+        public async Task AddAsync(Challenge challenge)
+        {
+            await _context.Challenges.AddAsync(challenge);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }
