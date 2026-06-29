@@ -1,10 +1,14 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRecipeStream } from "../hooks/useRecipeStream";
 import { useDetectIngredients } from "../hooks/useDetectIngredients";
 import { useRecipeHistory } from "../hooks/useRecipeHistory";
 import { useToggleFavorite } from "../hooks/useToggleFavorite";
+import { useParticipate } from "../../challenges/hooks/useParticipate";
+import { useActiveChallenge } from "../../challenges/hooks/useActiveChallenge";
+import { useProfile } from "../../auth/hooks/useProfile";
+import useChallengeStore from "../../../store/challengeStore";
 import RecipeDisplay from "./RecipeDisplay";
 import RestrictionsChips from "./RestrictionsChips";
 
@@ -18,10 +22,45 @@ export default function RecipeGeneratorPage() {
 
   const queryClient = useQueryClient();
 
-  const { recipe, isStreaming, error, startStream } = useRecipeStream();
+  const { recipe, recipeId, isStreaming, error, startStream } = useRecipeStream();
   const { detectFromImage, isDetecting, error: detectError } = useDetectIngredients();
   const { data: historyRecipes } = useRecipeHistory();
   const { addFavorite, removeFavorite } = useToggleFavorite();
+  const participate = useParticipate();
+  const { data: activeChallenge, isLoading: isChallengeLoading } = useActiveChallenge();
+  const { isChallengeMode, activeChallengeId, starIngredientName, enterChallenge, exitChallenge } = useChallengeStore();
+  const participatedRef = useRef(false);
+  const profileDefaultsRef = useRef(false);
+  const { data: profile } = useProfile();
+
+  useEffect(() => {
+    if (profile && !profileDefaultsRef.current) {
+      profileDefaultsRef.current = true;
+      setServings(profile.defaultServings);
+      const timeParts = profile.maxCookingTime.split(":");
+      if (timeParts.length === 3) {
+        setMaxCookingTimeMinutes(parseInt(timeParts[0]) * 60 + parseInt(timeParts[1]));
+      }
+      setDifficulty(profile.preferredDifficulty || "easy");
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (isChallengeMode && activeChallenge?.hasParticipated) {
+      exitChallenge();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!isStreaming && recipe && recipeId && isChallengeMode && activeChallengeId && !participatedRef.current) {
+      participatedRef.current = true;
+      participate.mutate(
+        { challengeId: activeChallengeId, recipeId },
+        { onSuccess: () => exitChallenge() }
+      );
+    }
+  }, [isStreaming, recipe, recipeId, isChallengeMode, activeChallengeId, participate, exitChallenge]);
 
   const match = useMemo(() => {
     if (!recipe || !historyRecipes) return null;
@@ -33,6 +72,18 @@ export default function RecipeGeneratorPage() {
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
     }
   }, [isStreaming, recipe, queryClient]);
+
+  const handleToggleChallenge = () => {
+    if (isChallengeMode) {
+      exitChallenge();
+      if (input === starIngredientName) {
+        setInput("");
+      }
+    } else if (activeChallenge) {
+      enterChallenge(activeChallenge.id, activeChallenge.starIngredientName);
+      setInput(activeChallenge.starIngredientName);
+    }
+  };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,10 +119,68 @@ export default function RecipeGeneratorPage() {
     });
   };
 
+  const challengeChip = (() => {
+    if (isChallengeLoading || !activeChallenge) return null;
+
+    const isDisabled = activeChallenge.hasParticipated;
+
+    if (isDisabled) {
+      return (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "6px 12px",
+            borderRadius: "16px",
+            fontSize: "14px",
+            fontWeight: 500,
+            backgroundColor: "#eee",
+            color: "#888",
+            cursor: "not-allowed",
+            userSelect: "none",
+          }}
+        >
+          <span>✓</span>
+          <span>Ya participaste: {activeChallenge.starIngredientName}</span>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        onClick={handleToggleChallenge}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "6px",
+          padding: "6px 12px",
+          borderRadius: "16px",
+          fontSize: "14px",
+          fontWeight: 500,
+          cursor: "pointer",
+          userSelect: "none",
+          backgroundColor: isChallengeMode ? "#fff9e6" : "#e3f2fd",
+          color: isChallengeMode ? "#b8860b" : "#1976d2",
+          border: isChallengeMode ? "1px solid #ffd700" : "1px solid transparent",
+        }}
+      >
+        <span>⭐</span>
+        <span>
+          {isChallengeMode
+            ? `Participando: ${starIngredientName} (click para salir)`
+            : `Participar en desafío: ${activeChallenge.starIngredientName}`}
+        </span>
+      </div>
+    );
+  })();
+
   return (
     <div>
       <button onClick={() => navigate(-1)} style={{ marginBottom: "16px", cursor: "pointer" }}>← Volver</button>
       <h1>Generar Receta</h1>
+
+      {challengeChip}
 
       <div style={{ marginBottom: "20px", padding: "20px", border: "2px dashed #ccc", borderRadius: "8px" }}>
         <h3>Detectar ingredientes desde imagen</h3>

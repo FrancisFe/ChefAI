@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLogin } from "../hooks/useLogin";
 import { useAuthRedirect } from "../hooks/useAuthRedirect";
 
 
 export default function LoginForm() {
     useAuthRedirect();
+    const navigate = useNavigate();
     
     const {mutate,isPending,error} = useLogin();
 
@@ -28,6 +30,12 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                 {isPending ? "Cargando..." : "Iniciar sesión"}
             </button>
             {error && <p>Error al loguear</p>}
+            <p style={{ marginTop: "16px", textAlign: "center" }}>
+                ¿No tenés cuenta?{" "}
+                <button type="button" onClick={() => navigate("/register")} style={{ background: "none", border: "none", color: "#1976d2", cursor: "pointer", textDecoration: "underline", padding: 0, fontSize: "inherit" }}>
+                    Registrate
+                </button>
+            </p>
         </form>
     );
 }

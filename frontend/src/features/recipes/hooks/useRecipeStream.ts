@@ -231,6 +231,7 @@ function parseQuantityAndUnit(
 export function useRecipeStream() {
   const [text, setText] = useState("");
   const [recipe, setRecipe] = useState<GeneratedRecipe | null>(null);
+  const [recipeId, setRecipeId] = useState<number | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const token = useAuthStore((s) => s.token);
@@ -244,10 +245,12 @@ export function useRecipeStream() {
 
     setText("");
     setRecipe(null);
+    setRecipeId(null);
     setIsStreaming(true);
     setError(null);
 
     let accumulated = "";
+    let doneReceived = false;
 
     try {
       const response = await fetch(
@@ -280,7 +283,19 @@ export function useRecipeStream() {
 
           const data = line.replace("data:", "").trim();
 
+          if (doneReceived) {
+            try {
+              const payload = JSON.parse(data);
+              if (payload.recipeId) setRecipeId(payload.recipeId);
+            } catch {
+              // ignore parse errors on payload
+            }
+            setIsStreaming(false);
+            return;
+          }
+
           if (data === "[DONE]") {
+            doneReceived = true;
             try {
               const parsedRecipe = parseRecipeFromText(accumulated);
               if (parsedRecipe) {
@@ -291,8 +306,7 @@ export function useRecipeStream() {
             } catch {
               setError("Error al procesar la receta");
             }
-            setIsStreaming(false);
-            return;
+            continue;
           }
 
           accumulated += data;
@@ -306,5 +320,5 @@ export function useRecipeStream() {
     }
   };
 
-  return { text, recipe, isStreaming, error, startStream };
+  return { text, recipe, recipeId, isStreaming, error, startStream };
 }

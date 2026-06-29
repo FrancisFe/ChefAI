@@ -100,6 +100,7 @@ builder.Services.AddScoped<IDietaryRestrictionRepository, DietaryRestrictionRepo
 builder.Services.AddScoped<IUserPointsRepository, UserPointsRepository>();
 builder.Services.AddScoped<IBadgeRepository, BadgeRepository>();
 builder.Services.AddScoped<IChallengeEntryRepository, ChallengeEntryRepository>();
+builder.Services.AddScoped<IChallengeRepository, ChallengeRepository>();
 
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -113,7 +114,7 @@ builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IGeminiVisionService, GeminiVisionService>();
 builder.Services.AddScoped<IGeminiRecipeService, GeminiRecipeService>();
 builder.Services.AddScoped<IGamificacionService, GamificacionService>();
-
+builder.Services.AddScoped<IChallengeService, ChallengeService>();
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection("GeminiSettings"));

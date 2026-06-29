@@ -1,4 +1,5 @@
-﻿using ChefAI.Application.Interfaces.Repositories;
+﻿using ChefAI.Application.DTOs.Challenge;
+using ChefAI.Application.Interfaces.Repositories;
 using ChefAI.Domain.Entities;
 using ChefAI.Infraestructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,19 @@ namespace ChefAI.Infraestructure.Repositories
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<IngredientListItemDto>> GetDistinctIngredientsAsync()
+        {
+            return await _context.RecipeIngredients
+                .GroupBy(i => i.Name.ToLower())
+                .Select(g => new IngredientListItemDto
+                {
+                    Id = g.Min(i => i.Id),
+                    Name = g.First().Name
+                })
+                .OrderBy(i => i.Name)
+                .ToListAsync();
         }
     }
 }

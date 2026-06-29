@@ -8,6 +8,9 @@ import RecipeGeneratorPage from "../features/recipes/components/RecipeGeneratorP
 import RecipeHistoryPage from "../features/recipes/components/RecipeHistoryPage";
 import FavoritesPage from "../features/recipes/components/FavoritesPage";
 import RecipeDetailPage from "../features/recipes/components/RecipeDetailPage";
+import ChallengePage from "../features/challenges/components/ChallengePage";
+import AdminChallengePage from "../features/challenges/components/AdminChallengePage";
+import AdminRoute from "../features/auth/components/AdminRoute";
 
 export const router = createBrowserRouter([
   {
@@ -37,6 +40,14 @@ export const router = createBrowserRouter([
       {
         path: "/profile",
         element: <ProfilePage />,
+      },
+      {
+        path: "/challenge",
+        element: <ChallengePage />,
+      },
+      {
+        path: "/admin",
+        element: <AdminRoute><AdminChallengePage /></AdminRoute>,
       },
     ],
   },

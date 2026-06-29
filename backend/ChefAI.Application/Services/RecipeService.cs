@@ -4,6 +4,7 @@ using ChefAI.Application.Helpers;
 using ChefAI.Application.Interfaces.Repositories;
 using ChefAI.Application.Interfaces.Services;
 using ChefAI.Application.Mappers;
+using ChefAI.Domain.Entities;
 using ChefAI.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
@@ -94,7 +95,7 @@ namespace ChefAI.Application.Services
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                await SaveGeneratedRecipeAsync(fullContent.ToString(), request, cancellationToken);
+                var savedRecipe = await SaveGeneratedRecipeAsync(fullContent.ToString(), request, cancellationToken);
 
                 var pointsResult = await _gamificacionService.AddPoints(request.UserId, GamificationAction.GenerateRecipe);
                 await _gamificacionService.UpdateStreak(request.UserId);
@@ -111,6 +112,7 @@ namespace ChefAI.Application.Services
                     totalPoints = pointsResult.TotalPoints,
                     currentLevel = pointsResult.CurrentLevel,
                     leveledUp,
+                    recipeId = savedRecipe?.Id,
                     badges = badges.Select(b => new
                     {
                         badgeUnlocked = b.BadgeUnlocked,
@@ -123,7 +125,7 @@ namespace ChefAI.Application.Services
             }
         }
 
-        private async Task SaveGeneratedRecipeAsync(
+        private async Task<Recipe?> SaveGeneratedRecipeAsync(
             string generatedText,
             RecipeRequestDto request,
             CancellationToken cancellationToken)
@@ -131,7 +133,7 @@ namespace ChefAI.Application.Services
             if (string.IsNullOrWhiteSpace(generatedText))
             {
                 _logger.LogWarning("La IA no devolvió contenido para la receta.");
-                return;
+                return null;
             }
 
             var generated = _textParser.ParseRecipeFromText(generatedText);
@@ -140,7 +142,7 @@ namespace ChefAI.Application.Services
             {
                 _logger.LogError("No se pudo parsear la receta generada. Texto:\n{GeneratedText}",
                     generatedText.Substring(0, Math.Min(500, generatedText.Length)));
-                return;
+                return null;
             }
 
             _logger.LogInformation(
@@ -156,6 +158,7 @@ namespace ChefAI.Application.Services
                 await _recipeRepository.SaveAsync(recipe, cancellationToken);
                 _logger.LogInformation("Receta '{Title}' guardada exitosamente para usuario {UserId}",
                     recipe.Title, request.UserId);
+                return recipe;
             }
             catch (Exception ex)
             {

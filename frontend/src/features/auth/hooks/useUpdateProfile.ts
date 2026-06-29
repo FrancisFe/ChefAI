@@ -3,6 +3,7 @@ import { apiClient } from "../../../lib/api-client";
 import type { UserProfile } from "./useProfile";
 import useAuthStore from "../../../store/authStore";
 import type { DietaryRestriction } from "./useDietaryRestrictions";
+import { toast } from "sonner";
 
 interface UpdateProfileDto {
   dietaryRestrictions: DietaryRestriction[];
@@ -22,9 +23,10 @@ export function useUpdateProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      toast.success("Perfil guardado correctamente");
     },
-    onError: (error) => {
-      console.error("Failed to update profile:", error);
+    onError: () => {
+      toast.error("Error al guardar el perfil");
     },
   });
 }

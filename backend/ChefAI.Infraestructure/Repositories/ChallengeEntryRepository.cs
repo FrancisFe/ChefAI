@@ -14,6 +14,11 @@ namespace ChefAI.Infraestructure.Repositories
             _context = context;
         }
 
+        public async Task<bool> HasParticipatedAsync(int challengeId, int userId)
+        {
+            return await _context.ChallengeEntries.AnyAsync(ce => ce.ChallengeId == challengeId && ce.UserId == userId);
+        }
+
         public async Task<bool> UserHasParticipatedAsync(int userId)
         {
             return await _context.ChallengeEntries.AnyAsync(ce => ce.UserId == userId);

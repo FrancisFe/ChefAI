@@ -26,6 +26,44 @@ namespace ChefAI.Application.Services
             _gamificacionService = gamificacionService;
         }
 
+        public async Task<ChallengeResultDto?> GetChallengeByIdAsync(int challengeId)
+        {
+            var challenge = await _challengeRepository.GetByIdAsync(challengeId);
+            if (challenge == null)
+                throw new Exception("Challenge not found");
+            return new ChallengeResultDto
+            {
+                Id = challenge.Id,
+                StarIngredientId = challenge.StarIngredientId,
+                StarIngredientName = challenge.StarIngredient?.Name ?? string.Empty,
+                StartDate = challenge.StartDate,
+                EndDate = challenge.EndDate,
+                Status = challenge.Status
+            };
+        }
+
+        public async Task<ChallengeResultDto?> GetActiveChallengeAsync(int? userId = null)
+        {
+            var challenge = await _challengeRepository.GetActiveAsync();
+            if (challenge == null)
+                return null;
+
+            var hasParticipated = userId.HasValue
+                ? await _challengeEntryRepository.HasParticipatedAsync(challenge.Id, userId.Value)
+                : false;
+
+            return new ChallengeResultDto
+            {
+                Id = challenge.Id,
+                StarIngredientId = challenge.StarIngredientId,
+                StarIngredientName = challenge.StarIngredient?.Name ?? string.Empty,
+                StartDate = challenge.StartDate,
+                EndDate = challenge.EndDate,
+                Status = challenge.Status,
+                HasParticipated = hasParticipated
+            };
+        }
+
         public async Task ActivateAsync(int challengeId)
         {
             var challenge = await _challengeRepository.GetByIdAsync(challengeId);
@@ -36,27 +74,42 @@ namespace ChefAI.Application.Services
             await _challengeRepository.SaveChangesAsync();
         }
 
-        public Task CloseAsync(int challengeId)
+        public async Task CloseAsync(int challengeId)
         {
-            throw new NotImplementedException();
+            var challenge =await _challengeRepository.GetByIdAsync(challengeId);
+            if(challenge == null)
+            {
+                throw new Exception("Challenge not found");
+            }
+            challenge.Status = ChallengeStatus.Completed;
+            await _challengeRepository.SaveChangesAsync();
+
         }
 
-        public async Task<ChallengeResultDto> CreateAsync(RecipeIngredient recipeIngredient, DateTime startDate, DateTime endDate)
+
+
+        public async Task<List<IngredientListItemDto>> GetAvailableIngredientsAsync()
         {
+            return await _recipeRepository.GetDistinctIngredientsAsync();
+        }
+
+        public async Task<ChallengeResultDto> CreateAsync(CreateChallengeRequest request)
+        {
+
             var challenge = new Challenge
             {
-                StarIngredientId = recipeIngredient.Id,
-                StarIngredient = recipeIngredient,
-                StartDate = startDate,
-                EndDate = endDate,
+                StarIngredientId = request.StarIngredientId,
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
                 Status = ChallengeStatus.Draft
             };
             await _challengeRepository.AddAsync(challenge);
             return new ChallengeResultDto
             {
-                StarIngredient = recipeIngredient,
-                StartDate = startDate,
-                EndDate = endDate,
+                Id = challenge.Id,
+                StarIngredientId = request.StarIngredientId,
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
                 Status = ChallengeStatus.Draft
             };
         }
@@ -65,21 +118,21 @@ namespace ChefAI.Application.Services
         {
             var challenge = await _challengeRepository.GetByIdAsync(challengeId);
             if (challenge == null)
-                throw new Exception("Challenge not found");
+                throw new KeyNotFoundException("No se encontró el desafío.");
 
             if (challenge.Status != ChallengeStatus.Active)
-                throw new Exception("Challenge is not active");
+                throw new InvalidOperationException("El desafío no está activo.");
 
-            var hasParticipated = await _challengeEntryRepository.UserHasParticipatedAsync(userId);
+            var hasParticipated = await _challengeEntryRepository.HasParticipatedAsync(challengeId, userId);
             if (hasParticipated)
-                throw new Exception("User has already participated in a challenge");
+                throw new InvalidOperationException("Ya participaste en este desafío.");
 
             var recipe = await _recipeRepository.GetByIdAsync(recipeId);
             if (recipe == null)
-                throw new Exception("Recipe not found");
+                throw new KeyNotFoundException("No se encontró la receta.");
 
             if (recipe.UserId != userId)
-                throw new Exception("Recipe does not belong to the user");
+                throw new UnauthorizedAccessException("La receta no te pertenece.");
 
             var entry = new ChallengeEntry
             {
@@ -97,5 +150,7 @@ namespace ChefAI.Application.Services
 
             return pointsResult;
         }
+
+
     }
 }

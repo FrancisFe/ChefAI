@@ -1,4 +1,5 @@
-﻿using ChefAI.Domain.Entities;
+﻿using ChefAI.Application.DTOs.Challenge;
+using ChefAI.Domain.Entities;
 
 namespace ChefAI.Application.Interfaces.Repositories
 {
@@ -9,6 +10,6 @@ namespace ChefAI.Application.Interfaces.Repositories
 
         public Task<Recipe?> GetByIdAsync(int recipeId);
         public Task SaveChangesAsync();
-        
+        public Task<List<IngredientListItemDto>> GetDistinctIngredientsAsync();
     }
 }
