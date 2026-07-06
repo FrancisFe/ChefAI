@@ -13,17 +13,20 @@ namespace ChefAI.Application.Services
         private readonly IChallengeEntryRepository _challengeEntryRepository;
         private readonly IRecipeRepository _recipeRepository;
         private readonly IGamificacionService _gamificacionService;
+        private readonly IVoteRepository _voteRepository;
 
         public ChallengeService(
             IChallengeRepository challengeRepository,
             IChallengeEntryRepository challengeEntryRepository,
             IRecipeRepository recipeRepository,
-            IGamificacionService gamificacionService)
+            IGamificacionService gamificacionService,
+            IVoteRepository voteRepository)
         {
             _challengeRepository = challengeRepository;
             _challengeEntryRepository = challengeEntryRepository;
             _recipeRepository = recipeRepository;
             _gamificacionService = gamificacionService;
+            _voteRepository = voteRepository;
         }
 
         public async Task<ChallengeResultDto?> GetChallengeByIdAsync(int challengeId)
@@ -87,6 +90,20 @@ namespace ChefAI.Application.Services
         }
 
 
+
+        public async Task<List<ChallengeResultDto>> GetAllAsync()
+        {
+            var challenges = await _challengeRepository.GetAllAsync();
+            return challenges.Select(c => new ChallengeResultDto
+            {
+                Id = c.Id,
+                StarIngredientId = c.StarIngredientId,
+                StarIngredientName = c.StarIngredient?.Name ?? string.Empty,
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
+                Status = c.Status
+            }).ToList();
+        }
 
         public async Task<List<IngredientListItemDto>> GetAvailableIngredientsAsync()
         {
@@ -152,5 +169,53 @@ namespace ChefAI.Application.Services
         }
 
 
+        public async Task<PagedResponse<ChallengeFeedEntryDto>> GetFeedAsync(int challengeId, int userId, int page = 1, int pageSize = 20)
+        {
+            var challenge = await _challengeRepository.GetByIdAsync(challengeId);
+            if (challenge == null)
+                throw new KeyNotFoundException("No se encontró el desafío.");
+
+            var entries = await _challengeEntryRepository.GetByChallengeIdAsync(challengeId);
+            var totalCount = entries.Count;
+            var pagedEntries = entries
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var entryIds = pagedEntries.Select(e => e.Id).ToList();
+            var userVotedEntryIds = await _voteRepository.GetUserVotedEntryIdsAsync(userId, entryIds);
+
+            var items = pagedEntries.Select(e => new ChallengeFeedEntryDto
+            {
+                EntryId = e.Id,
+                RecipeId = e.RecipeId,
+                RecipeTitle = e.Recipe.Title,
+                OwnerUserId = e.UserId,
+                OwnerName = e.User.UserName,
+                VoteCount = e.VoteCount,
+                HasVoted = userVotedEntryIds.Contains(e.Id)
+            }).ToList();
+
+            return new PagedResponse<ChallengeFeedEntryDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<List<ChallengeHistoryDto>> GetHistoryAsync()
+        {
+            var challenges = await _challengeRepository.GetCompletedAsync();
+            return challenges.Select(c => new ChallengeHistoryDto
+            {
+                Id = c.Id,
+                StarIngredientName = c.StarIngredient?.Name ?? string.Empty,
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
+                ParticipationCount = c.Entries.Count
+            }).ToList();
+        }
     }
 }

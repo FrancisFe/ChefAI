@@ -111,3 +111,50 @@ export const detectIngredientsFromImage = async (
   );
   return response.data;
 };
+
+// Challenge feed & vote endpoints
+export interface ChallengeFeedEntry {
+  entryId: number;
+  recipeId: number;
+  recipeTitle: string;
+  ownerUserId: number;
+  ownerName: string;
+  voteCount: number;
+  hasVoted: boolean;
+}
+
+export interface PagedFeedResponse {
+  items: ChallengeFeedEntry[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  hasNextPage: boolean;
+}
+
+export interface ChallengeHistoryItem {
+  id: number;
+  starIngredientName: string;
+  startDate: string;
+  endDate: string;
+  participationCount: number;
+}
+
+export const getChallengeFeed = async (challengeId: number, page: number = 1, pageSize: number = 20): Promise<PagedFeedResponse> => {
+  const response = await apiClient.get<PagedFeedResponse>(`/challenge/${challengeId}/feed`, {
+    params: { page, pageSize },
+  });
+  return response.data;
+};
+
+export const getChallengeHistory = async (): Promise<ChallengeHistoryItem[]> => {
+  const response = await apiClient.get<ChallengeHistoryItem[]>(`/challenge/history`);
+  return response.data;
+};
+
+export const voteChallengeEntry = async (entryId: number): Promise<void> => {
+  await apiClient.post(`/challenge/entries/${entryId}/vote`);
+};
+
+export const removeVoteChallengeEntry = async (entryId: number): Promise<void> => {
+  await apiClient.delete(`/challenge/entries/${entryId}/vote`);
+};

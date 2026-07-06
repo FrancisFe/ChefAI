@@ -10,6 +10,6 @@
         public Challenge Challenge { get; set; } = null!;
         public User User { get; set; } = null!;
         public Recipe Recipe { get; set; } = null!;
-
+        public List<Vote> Votes { get; set; } = new();
     }
 }

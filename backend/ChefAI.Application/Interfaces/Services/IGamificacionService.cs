@@ -7,6 +7,7 @@ namespace ChefAI.Application.Interfaces.Services
     {
         Task<PointsResult> AddPoints(int userId, GamificationAction action);
         Task<StreakResult> UpdateStreak(int userId);
+        Task<PointsResult> DeductPoints(int userId, int points);
         Task<List<BadgeResult>> EvaluateBadges(int userId);
         Task<PointsDto> GetUserPointsAsync(int userId);
         Task<List<BadgeStatusDto>> GetUserBadgesWithStatusAsync(int userId);

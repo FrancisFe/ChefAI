@@ -40,6 +40,18 @@ namespace ChefAI.Application.Services
             return new PointsResult((int)action, userPoints.TotalPoints, CalculateLevel(userPoints.TotalPoints));
         }
 
+        public async Task<PointsResult> DeductPoints(int userId, int points)
+        {
+            var userPoints = await _userPointsRepository.GetByUserIdAsync(userId);
+            if (userPoints == null)
+            {
+                throw new Exception("User points record not found.");
+            }
+            userPoints.TotalPoints = Math.Max(0, userPoints.TotalPoints - points);
+            await _userPointsRepository.UpdateAsync(userPoints);
+            return new PointsResult(-points, userPoints.TotalPoints, CalculateLevel(userPoints.TotalPoints));
+        }
+
         public async Task<List<BadgeResult>> EvaluateBadges(int userId)
         {
             var allBadges = await _badgeRepository.GetAllAsync();

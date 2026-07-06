@@ -40,6 +40,16 @@ namespace ChefAI.Infraestructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Challenge>> GetCompletedAsync()
+        {
+            return await _context.Challenges
+                .Include(c => c.StarIngredient)
+                .Include(c => c.Entries)
+                .Where(c => c.Status == ChallengeStatus.Completed)
+                .OrderByDescending(c => c.EndDate)
+                .ToListAsync();
+        }
+
         public async Task AddAsync(Challenge challenge)
         {
             await _context.Challenges.AddAsync(challenge);

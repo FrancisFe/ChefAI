@@ -1,6 +1,5 @@
 ﻿using ChefAI.Application.DTOs;
 using ChefAI.Application.DTOs.Challenge;
-using ChefAI.Domain.Entities;
 
 namespace ChefAI.Application.Interfaces.Services
 {
@@ -12,6 +11,9 @@ namespace ChefAI.Application.Interfaces.Services
         public Task CloseAsync(int challengeId);
         public Task<ChallengeResultDto?> GetChallengeByIdAsync(int challengeId);
         public Task<ChallengeResultDto?> GetActiveChallengeAsync(int? userId = null);
+        public Task<List<ChallengeResultDto>> GetAllAsync();
+        public Task<List<ChallengeHistoryDto>> GetHistoryAsync();
         public Task<List<IngredientListItemDto>> GetAvailableIngredientsAsync();
+        public Task<PagedResponse<ChallengeFeedEntryDto>> GetFeedAsync(int challengeId, int userId, int page = 1, int pageSize = 20);
     }
 }

@@ -19,6 +19,7 @@ namespace ChefAI.Infraestructure.Data
         public DbSet<UserPoints> UserPoints { get; set; } = null!;
         public DbSet<Recipe> Recipes { get; set; } = null!;
         public DbSet<RecipeIngredient> RecipeIngredients { get; set; } = null!;
+        public DbSet<Vote> Votes { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

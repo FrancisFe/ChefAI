@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,10 @@ if (builder.Environment.IsDevelopment())
 }
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
@@ -115,6 +119,8 @@ builder.Services.AddScoped<IGeminiVisionService, GeminiVisionService>();
 builder.Services.AddScoped<IGeminiRecipeService, GeminiRecipeService>();
 builder.Services.AddScoped<IGamificacionService, GamificacionService>();
 builder.Services.AddScoped<IChallengeService, ChallengeService>();
+builder.Services.AddScoped<IVoteService, VoteService>();
+builder.Services.AddScoped<IVoteRepository, VoteRepository>();
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection("GeminiSettings"));

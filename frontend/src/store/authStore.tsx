@@ -29,7 +29,8 @@ function extractUserIdFromToken(token: string): number | null {
         const parts = token.split('.');
         if (parts.length !== 3) return null;
         const payload = JSON.parse(atob(parts[1]));
-        return payload.userId || payload.sub || null;
+        const id = payload.userId ?? payload.sub ?? null;
+        return id ? Number(id) : null;
     } catch {
         return null;
     }

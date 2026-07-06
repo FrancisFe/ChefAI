@@ -12,9 +12,11 @@ namespace ChefAI.API.Controllers
     public class ChallengeController : ControllerBase
     {
         private readonly IChallengeService _challengeService;
-        public ChallengeController(IChallengeService challengeService)
+        private readonly IVoteService _voteService;
+        public ChallengeController(IChallengeService challengeService, IVoteService voteService)
         {
             _challengeService = challengeService;
+            _voteService = voteService;
         }
 
         [Authorize(Roles = "Admin")]
@@ -39,6 +41,14 @@ namespace ChefAI.API.Controllers
         {
             await _challengeService.CloseAsync(challengeId);
             return NoContent();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllChallenges()
+        {
+            var challenges = await _challengeService.GetAllAsync();
+            return Ok(challenges);
         }
 
         [Authorize(Roles = "Admin")]
@@ -70,6 +80,50 @@ namespace ChefAI.API.Controllers
 
             var result = await _challengeService.ParticipateAsync(challengeId, request.RecipeId, userId);
             return Ok(result);
+        }
+
+        [Authorize]
+        [HttpPost("entries/{entryId}/vote")]
+        public async Task<IActionResult> Vote(int entryId)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (userId == 0)
+                return Unauthorized("No user ID found in token");
+
+            var (points, badges) = await _voteService.VoteAsync(userId, entryId);
+            return Ok(new { points, badges });
+        }
+
+        [Authorize]
+        [HttpDelete("entries/{entryId}/vote")]
+        public async Task<IActionResult> RemoveVote(int entryId)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (userId == 0)
+                return Unauthorized("No user ID found in token");
+
+            var points = await _voteService.RemoveVoteAsync(userId, entryId);
+            return Ok(new { points });
+        }
+
+        [Authorize]
+        [HttpGet("{id}/feed")]
+        public async Task<IActionResult> GetFeed(int id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (userId == 0)
+                return Unauthorized("No user ID found in token");
+
+            var feed = await _challengeService.GetFeedAsync(id, userId, page, pageSize);
+            return Ok(feed);
+        }
+
+        [Authorize]
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory()
+        {
+            var history = await _challengeService.GetHistoryAsync();
+            return Ok(history);
         }
     }
 }
