@@ -24,7 +24,12 @@ namespace ChefAI.Infraestructure.Configs
             builder.Property(u => u.RefreshToken)
                    .HasMaxLength(500);
             builder.Property(u => u.TokenExpires);
+            builder.Property(u => u.UserName)
+                   .IsRequired()
+                   .HasMaxLength(50);
             builder.HasIndex(u => u.Email)
+                   .IsUnique();
+            builder.HasIndex(u => u.UserName)
                    .IsUnique();
             builder.Property(u => u.Role)
                    .HasConversion<string>()

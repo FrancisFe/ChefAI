@@ -5,12 +5,13 @@ import { useRecipeStream } from "../hooks/useRecipeStream";
 import { useDetectIngredients } from "../hooks/useDetectIngredients";
 import { useRecipeHistory } from "../hooks/useRecipeHistory";
 import { useToggleFavorite } from "../hooks/useToggleFavorite";
-import { useParticipate } from "../../challenges/hooks/useParticipate";
+import { useParticipate, type PointsResult } from "../../challenges/hooks/useParticipate";
 import { useActiveChallenge } from "../../challenges/hooks/useActiveChallenge";
 import { useProfile } from "../../auth/hooks/useProfile";
 import useChallengeStore from "../../../store/challengeStore";
 import RecipeDisplay from "./RecipeDisplay";
 import RestrictionsChips from "./RestrictionsChips";
+import ParticipationSuccessOverlay from "../../challenges/components/ParticipationSuccessOverlay";
 
 export default function RecipeGeneratorPage() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export default function RecipeGeneratorPage() {
   const { isChallengeMode, activeChallengeId, starIngredientName, enterChallenge, exitChallenge } = useChallengeStore();
   const participatedRef = useRef(false);
   const profileDefaultsRef = useRef(false);
+  const [participationResult, setParticipationResult] = useState<PointsResult | null>(null);
   const { data: profile } = useProfile();
 
   useEffect(() => {
@@ -57,10 +59,10 @@ export default function RecipeGeneratorPage() {
       participatedRef.current = true;
       participate.mutate(
         { challengeId: activeChallengeId, recipeId },
-        { onSuccess: () => exitChallenge() }
+        { onSuccess: (data) => setParticipationResult(data) }
       );
     }
-  }, [isStreaming, recipe, recipeId, isChallengeMode, activeChallengeId, participate, exitChallenge]);
+  }, [isStreaming, recipe, recipeId, isChallengeMode, activeChallengeId, participate]);
 
   const match = useMemo(() => {
     if (!recipe || !historyRecipes) return null;
@@ -279,6 +281,16 @@ export default function RecipeGeneratorPage() {
   </>
 )}
       </div>
+
+      {participationResult && (
+        <ParticipationSuccessOverlay
+          result={participationResult}
+          onClose={() => {
+            setParticipationResult(null);
+            exitChallenge();
+          }}
+        />
+      )}
     </div>
   );
 }

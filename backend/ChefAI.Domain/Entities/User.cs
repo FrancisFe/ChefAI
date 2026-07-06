@@ -7,6 +7,7 @@ namespace ChefAI.Domain.Entities
         public int Id { get; set; }
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; }
         public string? RefreshToken { get; set; }
@@ -17,5 +18,6 @@ namespace ChefAI.Domain.Entities
         public List<Recipe> Recipes { get; set; } = new();
         public List<ChallengeEntry> ChallengeEntries { get; set; } = new();
         public List<UserBadge> UserBadges { get; set; } = new();
+        public List<Vote> Votes { get; set; } = new();
     }
 }

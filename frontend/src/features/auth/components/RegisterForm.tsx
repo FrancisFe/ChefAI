@@ -7,6 +7,7 @@ export default function RegisterForm() {
 
   const { mutate, isPending, error } = useRegister();
 
+  const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -21,12 +22,19 @@ export default function RegisterForm() {
     }
 
     setValidationError("");
-    mutate({ email, password, confirmPassword });
+    mutate({ userName, email, password, confirmPassword });
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <h2>Registrarse</h2>
+
+      <input
+        type="text"
+        placeholder="Nombre de usuario"
+        value={userName}
+        onChange={(e) => setUserName(e.target.value)}
+      />
 
       <input
         type="email"

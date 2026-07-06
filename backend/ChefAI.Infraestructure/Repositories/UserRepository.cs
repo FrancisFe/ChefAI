@@ -32,6 +32,11 @@ namespace ChefAI.Infraestructure.Repositories
             return await _context.Users.AnyAsync(u => u.Email == email);
         }
 
+        public async Task<bool> UserNameExistAsync(string userName)
+        {
+            return await _context.Users.AnyAsync(u => u.UserName == userName);
+        }
+
         public async Task<User?> GetByEmailAsync(string email)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);

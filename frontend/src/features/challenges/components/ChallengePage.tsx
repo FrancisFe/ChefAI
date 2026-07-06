@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useActiveChallenge } from "../hooks/useActiveChallenge";
+import { useCountdown } from "../hooks/useCountdown";
 import useChallengeStore from "../../../store/challengeStore";
 import axios from "axios";
 
@@ -13,10 +13,7 @@ export default function ChallengePage() {
 
   return (
     <div>
-      <button onClick={() => navigate(-1)} style={{ marginBottom: "16px", cursor: "pointer" }}>
-        ← Volver
-      </button>
-      <h1>Modo Social</h1>
+      <h1>Desafío Activo</h1>
 
       {isLoading && <p>Cargando desafío...</p>}
 
@@ -54,7 +51,7 @@ export default function ChallengePage() {
             <p style={{ color: "#666" }}>Ingrediente estrella de la semana</p>
           </div>
 
-          <Countdown endDate={challenge.endDate} />
+          <CountdownDisplay endDate={challenge.endDate} />
 
           <button
             disabled={challenge.hasParticipated}
@@ -77,37 +74,50 @@ export default function ChallengePage() {
           >
             {challenge.hasParticipated ? "Ya participaste" : "Participar en el desafío"}
           </button>
+
+          <button
+            onClick={() => navigate("/challenge/leaderboard")}
+            style={{
+              display: "block",
+              margin: "12px auto 0",
+              padding: "10px 24px",
+              fontSize: "15px",
+              fontWeight: 500,
+              background: "transparent",
+              border: "1px solid #b8860b",
+              borderRadius: "8px",
+              cursor: "pointer",
+              color: "#b8860b",
+            }}
+          >
+            Ver feed
+          </button>
+
+          <button
+            onClick={() => navigate("/challenge/ranking")}
+            style={{
+              display: "block",
+              margin: "12px auto 0",
+              padding: "10px 24px",
+              fontSize: "15px",
+              fontWeight: 500,
+              background: "transparent",
+              border: "1px solid #b8860b",
+              borderRadius: "8px",
+              cursor: "pointer",
+              color: "#b8860b",
+            }}
+          >
+            Ver ranking
+          </button>
         </div>
       )}
     </div>
   );
 }
 
-function Countdown({ endDate }: { endDate: string }) {
-  const [timeLeft, setTimeLeft] = useState("");
-
-  useEffect(() => {
-    const end = new Date(endDate).getTime();
-
-    const tick = () => {
-      const now = Date.now();
-      const diff = end - now;
-
-      if (diff <= 0) {
-        setTimeLeft("0d 0h 0m");
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      setTimeLeft(`${days}d ${hours}h ${minutes}m`);
-    };
-
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [endDate]);
+function CountdownDisplay({ endDate }: { endDate: string }) {
+  const timeLeft = useCountdown(endDate);
 
   return (
     <div style={{ textAlign: "center", marginTop: "16px" }}>

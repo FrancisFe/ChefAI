@@ -24,12 +24,19 @@ export default function AdminChallengePage() {
   const [ingredientId, setIngredientId] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [createdChallenge, setCreatedChallenge] = useState<ChallengeResult | null>(null);
 
   const { data: ingredients } = useQuery<Ingredient[]>({
     queryKey: ["challenge", "ingredients"],
     queryFn: async () => {
       const res = await apiClient.get<Ingredient[]>("/challenge/ingredients");
+      return res.data;
+    },
+  });
+
+  const { data: challenges } = useQuery<ChallengeResult[]>({
+    queryKey: ["challenge", "all"],
+    queryFn: async () => {
+      const res = await apiClient.get<ChallengeResult[]>("/challenge");
       return res.data;
     },
   });
@@ -43,9 +50,12 @@ export default function AdminChallengePage() {
       });
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Desafío creado");
-      setCreatedChallenge(data);
+      setIngredientId(0);
+      setStartDate("");
+      setEndDate("");
+      queryClient.invalidateQueries({ queryKey: ["challenge", "all"] });
     },
     onError: () => toast.error("Error al crear el desafío"),
   });
@@ -56,7 +66,6 @@ export default function AdminChallengePage() {
     },
     onSuccess: () => {
       toast.success("Desafío activado");
-      setCreatedChallenge(null);
       queryClient.invalidateQueries({ queryKey: ["challenge"] });
     },
     onError: () => toast.error("Error al activar el desafío"),
@@ -74,8 +83,12 @@ export default function AdminChallengePage() {
 
   const now = new Date().toISOString().slice(0, 16);
 
+  const draftChallenges = challenges?.filter((c) => c.status === "Draft") ?? [];
+  const activeChallenges = challenges?.filter((c) => c.status === "Active") ?? [];
+  const completedChallenges = challenges?.filter((c) => c.status === "Completed") ?? [];
+
   return (
-    <div style={{ maxWidth: "600px" }}>
+    <div style={{ maxWidth: "800px" }}>
       <button onClick={() => navigate(-1)} style={{ marginBottom: "16px", cursor: "pointer" }}>
         ← Volver
       </button>
@@ -145,46 +158,91 @@ export default function AdminChallengePage() {
         </button>
       </div>
 
-      {createdChallenge && (
-        <div
-          style={{
-            marginTop: "24px",
-            padding: "20px",
-            border: "2px solid #4caf50",
-            borderRadius: "8px",
-            background: "#f1f8e9",
-          }}
-        >
-          <h3>Desafío creado</h3>
-          <p>
-            <strong>Ingrediente:</strong> {createdChallenge.starIngredientName}
-          </p>
-          <p>
-            <strong>Inicio:</strong> {new Date(createdChallenge.startDate).toLocaleDateString()}
-          </p>
-          <p>
-            <strong>Cierre:</strong> {new Date(createdChallenge.endDate).toLocaleDateString()}
-          </p>
-          <p>
-            <strong>Estado:</strong> {createdChallenge.status}
-          </p>
-          <button
-            onClick={() => activateMutation.mutate(createdChallenge.id)}
-            disabled={activateMutation.isPending}
-            style={{
-              marginTop: "12px",
-              padding: "10px 24px",
-              background: "#4caf50",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: 600,
-            }}
-          >
-            {activateMutation.isPending ? "Activando..." : "Activar desafío"}
-          </button>
+      {draftChallenges.length > 0 && (
+        <div style={{ marginTop: "32px" }}>
+          <h2>Borradores ({draftChallenges.length})</h2>
+          {draftChallenges.map((c) => (
+            <div
+              key={c.id}
+              style={{
+                marginTop: "12px",
+                padding: "16px",
+                border: "1px solid #ffa726",
+                borderRadius: "8px",
+                background: "#fff8e1",
+              }}
+            >
+              <p><strong>Ingrediente:</strong> {c.starIngredientName}</p>
+              <p><strong>Inicio:</strong> {new Date(c.startDate).toLocaleDateString()}</p>
+              <p><strong>Cierre:</strong> {new Date(c.endDate).toLocaleDateString()}</p>
+              <button
+                onClick={() => activateMutation.mutate(c.id)}
+                disabled={activateMutation.isPending}
+                style={{
+                  marginTop: "8px",
+                  padding: "8px 20px",
+                  background: "#4caf50",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                {activateMutation.isPending ? "Activando..." : "Activar desafío"}
+              </button>
+            </div>
+          ))}
         </div>
+      )}
+
+      {activeChallenges.length > 0 && (
+        <div style={{ marginTop: "32px" }}>
+          <h2>Activos ({activeChallenges.length})</h2>
+          {activeChallenges.map((c) => (
+            <div
+              key={c.id}
+              style={{
+                marginTop: "12px",
+                padding: "16px",
+                border: "1px solid #4caf50",
+                borderRadius: "8px",
+                background: "#f1f8e9",
+              }}
+            >
+              <p><strong>Ingrediente:</strong> {c.starIngredientName}</p>
+              <p><strong>Inicio:</strong> {new Date(c.startDate).toLocaleDateString()}</p>
+              <p><strong>Cierre:</strong> {new Date(c.endDate).toLocaleDateString()}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {completedChallenges.length > 0 && (
+        <div style={{ marginTop: "32px" }}>
+          <h2>Completados ({completedChallenges.length})</h2>
+          {completedChallenges.map((c) => (
+            <div
+              key={c.id}
+              style={{
+                marginTop: "12px",
+                padding: "16px",
+                border: "1px solid #bbb",
+                borderRadius: "8px",
+                background: "#f5f5f5",
+                color: "#666",
+              }}
+            >
+              <p><strong>Ingrediente:</strong> {c.starIngredientName}</p>
+              <p><strong>Inicio:</strong> {new Date(c.startDate).toLocaleDateString()}</p>
+              <p><strong>Cierre:</strong> {new Date(c.endDate).toLocaleDateString()}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {challenges && challenges.length === 0 && (
+        <p style={{ marginTop: "24px", color: "#666" }}>No hay desafíos todavía.</p>
       )}
     </div>
   );

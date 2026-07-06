@@ -3,7 +3,7 @@ import { apiClient } from "../../../lib/api-client";
 import { toast } from "sonner";
 import axios from "axios";
 
-interface PointsResult {
+export interface PointsResult {
   pointsEarned: number;
   totalPoints: number;
   currentLevel: number;
@@ -20,8 +20,7 @@ export function useParticipate() {
       );
       return res.data;
     },
-    onSuccess: (data) => {
-      toast.success(`¡Participación registrada! +${data.pointsEarned} puntos`);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["gamification", "points"] });
       queryClient.invalidateQueries({ queryKey: ["gamification", "badges"] });
       queryClient.invalidateQueries({ queryKey: ["challenge"] });

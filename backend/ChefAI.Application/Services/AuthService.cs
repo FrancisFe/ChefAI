@@ -85,7 +85,13 @@ namespace ChefAI.Application.Services
             var email = request.Email.Trim().ToLower();
             if (await _userRepository.EmailExistAsync(email))
             {
-                _logger.LogWarning("Registration attempt with existing email or username");
+                _logger.LogWarning("Registration attempt with existing email");
+                return null;
+            }
+
+            if (await _userRepository.UserNameExistAsync(request.UserName.Trim()))
+            {
+                _logger.LogWarning("Registration attempt with existing username");
                 return null;
             }
 
@@ -94,6 +100,7 @@ namespace ChefAI.Application.Services
             var user = new User
             {
                 Email = request.Email.Trim().ToLower(),
+                UserName = request.UserName.Trim(),
                 CreatedAt = DateTime.UtcNow,
                 Role = UserRole.User,
                 IsActive = true
@@ -113,6 +120,7 @@ namespace ChefAI.Application.Services
             return new UserDto
             {
                 Email = user.Email,
+                UserName = user.UserName,
                 Role = user.Role
             };
 
