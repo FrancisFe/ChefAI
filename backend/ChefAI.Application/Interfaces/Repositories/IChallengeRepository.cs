@@ -7,7 +7,9 @@ namespace ChefAI.Application.Interfaces.Repositories
         Task<Challenge?> GetActiveAsync();
         Task<Challenge?> GetByIdAsync(int id);
         Task<List<Challenge>> GetAllAsync();
+        Task<List<Challenge>> GetAllActiveAsync();
         Task<List<Challenge>> GetCompletedAsync();
+        Task<List<Challenge>> GetHistoryAsync();
         Task AddAsync(Challenge challenge);
         Task SaveChangesAsync();
     }

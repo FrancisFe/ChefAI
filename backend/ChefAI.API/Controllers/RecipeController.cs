@@ -30,6 +30,12 @@ namespace ChefAI.API.Controllers
                 return BadRequest(new { message = "Debe enviar al menos un ingrediente." });
             }
 
+            var jwtUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (jwtUserId == 0)
+                return Unauthorized("No user ID found in token");
+
+            request.UserId = jwtUserId;
+
             Response.ContentType = "text/event-stream";
             Response.Headers.CacheControl = "no-cache";
 
@@ -78,6 +84,15 @@ namespace ChefAI.API.Controllers
 
             var recipes = await _recipeService.GetUserRecipeHistory(userId , favoritesOnly);
             return Ok(recipes);
+        }
+
+        [HttpGet("{recipeId}")]
+        public async Task<IActionResult> GetRecipeById(int recipeId)
+        {
+            var recipe = await _recipeService.GetRecipeByIdAsync(recipeId);
+            if (recipe == null)
+                return NotFound(new { message = "Receta no encontrada." });
+            return Ok(recipe);
         }
 
         [HttpPost("{recipeId}/favorite")]

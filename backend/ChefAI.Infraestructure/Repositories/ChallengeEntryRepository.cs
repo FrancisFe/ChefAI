@@ -49,6 +49,13 @@ namespace ChefAI.Infraestructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<ChallengeEntry>> GetAllEntriesWithUserAsync()
+        {
+            return await _context.ChallengeEntries
+                .Include(ce => ce.User)
+                .ToListAsync();
+        }
+
         public async Task AddAsync(ChallengeEntry entry)
         {
             await _context.ChallengeEntries.AddAsync(entry);

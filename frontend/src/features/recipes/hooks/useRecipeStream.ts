@@ -11,7 +11,6 @@ export interface GeneratedRecipe {
 }
 export interface GenerateRecipeRequest {
   ingredients: string[];
-  userId: number;
   servings: number;
   maxCookingTimeMinutes: number;
   difficulty: string;
@@ -261,7 +260,7 @@ export function useRecipeStream() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ ...params, userId }),
+          body: JSON.stringify(params),
         }
       );
 

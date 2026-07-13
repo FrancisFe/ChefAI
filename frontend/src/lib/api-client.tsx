@@ -75,6 +75,7 @@ export interface RecipeHistoryItem {
 
 export const getRecipeHistory = async (favoritesOnly = false): Promise<RecipeHistoryItem[]> => {
   const response = await apiClient.get<RecipeHistoryItem[]>(`/recipe/user/history`, {
+
     params: { favoritesOnly }
   });
   return response.data;
@@ -137,6 +138,7 @@ export interface ChallengeHistoryItem {
   startDate: string;
   endDate: string;
   participationCount: number;
+  status: string;
 }
 
 export const getChallengeFeed = async (challengeId: number, page: number = 1, pageSize: number = 20): Promise<PagedFeedResponse> => {
@@ -155,6 +157,23 @@ export const voteChallengeEntry = async (entryId: number): Promise<void> => {
   await apiClient.post(`/challenge/entries/${entryId}/vote`);
 };
 
+export const getRecipeById = async (recipeId: number): Promise<RecipeHistoryItem> => {
+  const response = await apiClient.get<RecipeHistoryItem>(`/recipe/${recipeId}`);
+  return response.data;
+};
+
 export const removeVoteChallengeEntry = async (entryId: number): Promise<void> => {
   await apiClient.delete(`/challenge/entries/${entryId}/vote`);
+};
+
+export interface TotalPointsRankingItem {
+  rank: number;
+  userId: number;
+  userName: string;
+  totalVotes: number;
+}
+
+export const getTotalPointsRanking = async (): Promise<TotalPointsRankingItem[]> => {
+  const response = await apiClient.get<TotalPointsRankingItem[]>("/challenge/ranking/total");
+  return response.data;
 };

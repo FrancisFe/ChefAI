@@ -199,6 +199,32 @@ namespace ChefAI.Application.Services
             return result;
         }
 
+        public async Task<AllRecipesByUserIdDto?> GetRecipeByIdAsync(int recipeId)
+        {
+            var recipe = await _recipeRepository.GetByIdAsync(recipeId);
+            if (recipe == null) return null;
+
+            return new AllRecipesByUserIdDto
+            {
+                Id = recipe.Id,
+                Title = recipe.Title,
+                Description = recipe.Description,
+                CookingTime = recipe.CookingTime,
+                Servings = recipe.Servings,
+                IsFavorite = recipe.IsFavorite,
+                CreatedAt = recipe.CreatedAt,
+                Steps = recipe.Steps,
+                Ingredients = recipe.Ingredients
+                    .Select(i => new AllRecipeIngredientDto
+                    {
+                        Name = i.Name,
+                        Quantity = i.Quantity,
+                        Unit = i.Unit
+                    })
+                    .ToList()
+            };
+        }
+
         public async Task AddFavorite(int recipeId, int userId)
         {
             var recipe = await _recipeRepository.GetByIdAsync(recipeId);

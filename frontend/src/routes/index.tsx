@@ -12,6 +12,7 @@ import ChallengePage from "../features/challenges/components/ChallengePage";
 import ChallengeLeaderboardPage from "../features/challenges/components/ChallengeLeaderboardPage";
 import ChallengeRankingPage from "../features/challenges/components/ChallengeRankingPage";
 import ChallengeHistoryPage from "../features/challenges/components/ChallengeHistoryPage";
+import TotalRankingPage from "../features/challenges/components/TotalRankingPage";
 import AdminChallengePage from "../features/challenges/components/AdminChallengePage";
 import AdminRoute from "../features/auth/components/AdminRoute";
 
@@ -59,6 +60,10 @@ export const router = createBrowserRouter([
       {
         path: "/challenge/history",
         element: <ChallengeHistoryPage />,
+      },
+      {
+        path: "/challenge/ranking/total",
+        element: <TotalRankingPage />,
       },
       {
         path: "/admin",

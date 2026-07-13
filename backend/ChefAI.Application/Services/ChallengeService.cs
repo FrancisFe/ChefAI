@@ -47,6 +47,8 @@ namespace ChefAI.Application.Services
 
         public async Task<ChallengeResultDto?> GetActiveChallengeAsync(int? userId = null)
         {
+            await AutoCloseExpiredAsync();
+
             var challenge = await _challengeRepository.GetActiveAsync();
             if (challenge == null)
                 return null;
@@ -73,6 +75,12 @@ namespace ChefAI.Application.Services
             if (challenge == null)
                 throw new Exception("Challenge not found");
 
+            var activeChallenges = await _challengeRepository.GetAllActiveAsync();
+            foreach (var active in activeChallenges.Where(a => a.Id != challengeId))
+            {
+                active.Status = ChallengeStatus.Draft;
+            }
+
             challenge.Status = ChallengeStatus.Active;
             await _challengeRepository.SaveChangesAsync();
         }
@@ -89,7 +97,33 @@ namespace ChefAI.Application.Services
 
         }
 
+        public async Task CancelAsync(int challengeId)
+        {
+            var challenge = await _challengeRepository.GetByIdAsync(challengeId);
+            if (challenge == null)
+                throw new Exception("Challenge not found");
 
+            if (challenge.Status == ChallengeStatus.Completed)
+                throw new InvalidOperationException("No se puede cancelar un desafío completado.");
+
+            challenge.Status = ChallengeStatus.Cancelled;
+            await _challengeRepository.SaveChangesAsync();
+        }
+
+        private async Task AutoCloseExpiredAsync()
+        {
+            var activeChallenges = await _challengeRepository.GetAllActiveAsync();
+            var expired = activeChallenges.Where(c => c.EndDate <= DateTime.Now).ToList();
+
+            if (expired.Count == 0) return;
+
+            foreach (var challenge in expired)
+            {
+                challenge.Status = ChallengeStatus.Completed;
+            }
+
+            await _challengeRepository.SaveChangesAsync();
+        }
 
         public async Task<List<ChallengeResultDto>> GetAllAsync()
         {
@@ -207,15 +241,40 @@ namespace ChefAI.Application.Services
 
         public async Task<List<ChallengeHistoryDto>> GetHistoryAsync()
         {
-            var challenges = await _challengeRepository.GetCompletedAsync();
+            var challenges = await _challengeRepository.GetHistoryAsync();
             return challenges.Select(c => new ChallengeHistoryDto
             {
                 Id = c.Id,
                 StarIngredientName = c.StarIngredient?.Name ?? string.Empty,
                 StartDate = c.StartDate,
                 EndDate = c.EndDate,
-                ParticipationCount = c.Entries.Count
+                ParticipationCount = c.Entries.Count,
+                Status = c.Status.ToString()
             }).ToList();
+        }
+
+        public async Task<List<TotalPointsRankingDto>> GetTotalPointsRankingAsync()
+        {
+            var entries = await _challengeEntryRepository.GetAllEntriesWithUserAsync();
+
+            var ranking = entries
+                .GroupBy(e => e.UserId)
+                .Select(g => new TotalPointsRankingDto
+                {
+                    UserId = g.Key,
+                    UserName = g.First().User.UserName,
+                    TotalVotes = g.Sum(e => e.VoteCount)
+                })
+                .OrderByDescending(r => r.TotalVotes)
+                .ToList();
+
+            var rank = 1;
+            foreach (var item in ranking)
+            {
+                item.Rank = rank++;
+            }
+
+            return ranking;
         }
     }
 }

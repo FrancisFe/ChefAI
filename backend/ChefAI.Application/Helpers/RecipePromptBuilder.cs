@@ -68,14 +68,17 @@ namespace ChefAI.Application.Helpers
         public string BuildUserPrompt(RecipeRequestDto request, IReadOnlyCollection<DietaryRestriction> dietaryRestrictions)
         {
             var sb = new StringBuilder();
+            var blockNum = 1;
 
-            AppendSectionHeader(sb, "BLOQUE 1 - INSTRUCCIÓN GENERAL");
+            AppendSectionHeader(sb, $"BLOQUE {blockNum} - INSTRUCCIÓN GENERAL");
+            blockNum++;
             sb.AppendLine("Genera una receta con los datos que siguen.");
             sb.AppendLine();
 
             if (dietaryRestrictions.Count > 0)
             {
-                AppendSectionHeader(sb, "BLOQUE 2 - RESTRICCIONES DIETÉTICAS");
+                AppendSectionHeader(sb, $"BLOQUE {blockNum} - RESTRICCIONES DIETÉTICAS");
+                blockNum++;
                 sb.AppendLine("IMPORTANTE: el usuario tiene las siguientes restricciones que deben respetarse estrictamente:");
 
                 foreach (var restriction in dietaryRestrictions.DistinctBy(r => r.Id))
@@ -90,7 +93,8 @@ namespace ChefAI.Application.Helpers
 
             if (HasPreferences(request))
             {
-                AppendSectionHeader(sb, "BLOQUE 3 - PREFERENCIAS DE LA RECETA");
+                AppendSectionHeader(sb, $"BLOQUE {blockNum} - PREFERENCIAS DE LA RECETA");
+                blockNum++;
 
                 if (request.MaxCookingTimeMinutes.HasValue)
                 {
@@ -110,16 +114,18 @@ namespace ChefAI.Application.Helpers
                 sb.AppendLine();
             }
 
-            AppendSectionHeader(sb, "BLOQUE 4 - INGREDIENTES DISPONIBLES");
+            AppendSectionHeader(sb, $"BLOQUE {blockNum} - INGREDIENTES DISPONIBLES");
+            blockNum++;
             foreach (var ingredient in request.Ingredients.Where(i => !string.IsNullOrWhiteSpace(i)))
             {
                 sb.AppendLine($"- {ingredient}");
             }
 
             sb.AppendLine();
-            AppendSectionHeader(sb, "BLOQUE 5 - INSTRUCCIÓN FINAL");
+            AppendSectionHeader(sb, $"BLOQUE {blockNum} - INSTRUCCIÓN FINAL");
             sb.AppendLine("Ahora genera la receta COMPLETA siguiendo el formato exacto.");
-            sb.AppendLine("DEBE INCLUIR TODOS LOS INGREDIENTES Y TODOS LOS PASOS.");
+            sb.AppendLine("Usa los ingredientes que tengan sentido para una receta coherente y sabrosa.");
+            sb.AppendLine("No es obligatorio usar todos — prioriza una receta que quede bien.");
 
             return sb.ToString();
         }

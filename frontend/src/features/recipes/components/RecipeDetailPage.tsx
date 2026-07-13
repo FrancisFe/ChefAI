@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useRecipeHistory } from "../hooks/useRecipeHistory";
+import { useQuery } from "@tanstack/react-query";
+import { getRecipeById, type RecipeHistoryItem } from "../../../lib/api-client";
 import { useToggleFavorite } from "../hooks/useToggleFavorite";
 
 export default function RecipeDetailPage() {
@@ -7,8 +8,11 @@ export default function RecipeDetailPage() {
   const navigate = useNavigate();
   const recipeId = Number(id);
 
-  const { data: recipes, isLoading, error } = useRecipeHistory();
-  const recipe = recipes?.find((r) => r.id === recipeId);
+  const { data: recipe, isLoading, error } = useQuery<RecipeHistoryItem>({
+    queryKey: ["recipe", recipeId],
+    queryFn: () => getRecipeById(recipeId),
+    enabled: !isNaN(recipeId),
+  });
   const { addFavorite, removeFavorite } = useToggleFavorite();
 
   if (isLoading) {

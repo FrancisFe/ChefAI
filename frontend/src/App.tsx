@@ -23,7 +23,8 @@ function App() {
   const socialActions = [
     { label: "Desafío Activo", icon: "⭐", to: "/challenge" },
     { label: "Feed", icon: "🍴", to: "/challenge/leaderboard" },
-    { label: "Ranking", icon: "🏆", to: "/challenge/ranking" },
+    { label: "Ranking Desafío", icon: "🏆", to: "/challenge/ranking" },
+    { label: "Ranking Global", icon: "🌍", to: "/challenge/ranking/total" },
     { label: "Historial", icon: "📜", to: "/challenge/history" },
   ];
 

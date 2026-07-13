@@ -44,6 +44,14 @@ namespace ChefAI.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpPost("{challengeId}/cancel")]
+        public async Task<IActionResult> CancelChallenge(int challengeId)
+        {
+            await _challengeService.CancelAsync(challengeId);
+            return NoContent();
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllChallenges()
         {
@@ -124,6 +132,14 @@ namespace ChefAI.API.Controllers
         {
             var history = await _challengeService.GetHistoryAsync();
             return Ok(history);
+        }
+
+        [Authorize]
+        [HttpGet("ranking/total")]
+        public async Task<IActionResult> GetTotalPointsRanking()
+        {
+            var ranking = await _challengeService.GetTotalPointsRankingAsync();
+            return Ok(ranking);
         }
     }
 }

@@ -13,7 +13,8 @@ const personalLinks = [
 const socialLinks = [
   { to: "/challenge", label: "Desafío Activo" },
   { to: "/challenge/leaderboard", label: "Feed" },
-  { to: "/challenge/ranking", label: "Ranking" },
+  { to: "/challenge/ranking", label: "Ranking Desafío" },
+  { to: "/challenge/ranking/total", label: "Ranking Global" },
   { to: "/challenge/history", label: "Historial" },
 ];
 

@@ -24,6 +24,13 @@ namespace ChefAI.Infraestructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<List<Challenge>> GetAllActiveAsync()
+        {
+            return await _context.Challenges
+                .Where(c => c.Status == ChallengeStatus.Active)
+                .ToListAsync();
+        }
+
         public async Task<Challenge?> GetByIdAsync(int id)
         {
             return await _context.Challenges
@@ -46,6 +53,16 @@ namespace ChefAI.Infraestructure.Repositories
                 .Include(c => c.StarIngredient)
                 .Include(c => c.Entries)
                 .Where(c => c.Status == ChallengeStatus.Completed)
+                .OrderByDescending(c => c.EndDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Challenge>> GetHistoryAsync()
+        {
+            return await _context.Challenges
+                .Include(c => c.StarIngredient)
+                .Include(c => c.Entries)
+                .Where(c => c.Status != ChallengeStatus.Draft)
                 .OrderByDescending(c => c.EndDate)
                 .ToListAsync();
         }

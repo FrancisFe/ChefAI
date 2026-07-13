@@ -7,5 +7,6 @@ namespace ChefAI.Application.DTOs.Challenge
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int ParticipationCount { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }

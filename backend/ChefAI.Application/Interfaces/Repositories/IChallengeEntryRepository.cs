@@ -9,6 +9,7 @@ namespace ChefAI.Application.Interfaces.Repositories
         Task<int> GetTotalVotesReceivedAsync(int userId);
         Task<ChallengeEntry?> GetByIdAsync(int id);
         Task<List<ChallengeEntry>> GetByChallengeIdAsync(int challengeId);
+        Task<List<ChallengeEntry>> GetAllEntriesWithUserAsync();
         Task AddAsync(ChallengeEntry entry);
         Task UpdateAsync(ChallengeEntry entry);
         Task SaveChangesAsync();

@@ -45,8 +45,8 @@ export default function AdminChallengePage() {
     mutationFn: async () => {
       const res = await apiClient.post<ChallengeResult>("/challenge", {
         starIngredientId: ingredientId,
-        startDate: new Date(startDate).toISOString(),
-        endDate: new Date(endDate).toISOString(),
+        startDate,
+        endDate,
       });
       return res.data;
     },
@@ -66,9 +66,22 @@ export default function AdminChallengePage() {
     },
     onSuccess: () => {
       toast.success("Desafío activado");
-      queryClient.invalidateQueries({ queryKey: ["challenge"] });
+      queryClient.invalidateQueries({ queryKey: ["challenge", "all"] });
+      queryClient.invalidateQueries({ queryKey: ["challenge", "active"] });
     },
     onError: () => toast.error("Error al activar el desafío"),
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: async (challengeId: number) => {
+      await apiClient.post(`/challenge/${challengeId}/cancel`);
+    },
+    onSuccess: () => {
+      toast.success("Desafío cancelado");
+      queryClient.invalidateQueries({ queryKey: ["challenge", "all"] });
+      queryClient.invalidateQueries({ queryKey: ["challenge", "active"] });
+    },
+    onError: () => toast.error("Error al cancelar el desafío"),
   });
 
   const handleCreate = () => {
@@ -76,16 +89,14 @@ export default function AdminChallengePage() {
     createMutation.mutate();
   };
 
-  const clearDate = (d: string) => {
-    const dt = new Date(d);
-    return dt.toISOString().slice(0, 16);
-  };
+  const now = new Date().toLocaleString("sv-SE").slice(0, 16);
 
-  const now = new Date().toISOString().slice(0, 16);
-
-  const draftChallenges = challenges?.filter((c) => c.status === "Draft") ?? [];
-  const activeChallenges = challenges?.filter((c) => c.status === "Active") ?? [];
-  const completedChallenges = challenges?.filter((c) => c.status === "Completed") ?? [];
+  const sectionConfig: { key: string; title: string; border: string; bg: string }[] = [
+    { key: "Draft", title: "Borradores", border: "#ffa726", bg: "#fff8e1" },
+    { key: "Active", title: "Activos", border: "#4caf50", bg: "#f1f8e9" },
+    { key: "Completed", title: "Completados", border: "#bbb", bg: "#f5f5f5" },
+    { key: "Cancelled", title: "Cancelados", border: "#e53935", bg: "#ffebee" },
+  ];
 
   return (
     <div style={{ maxWidth: "800px" }}>
@@ -121,7 +132,7 @@ export default function AdminChallengePage() {
           </label>
           <input
             type="datetime-local"
-            value={startDate ? clearDate(startDate) : ""}
+            value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             min={now}
             style={{ width: "100%", padding: "8px" }}
@@ -134,7 +145,7 @@ export default function AdminChallengePage() {
           </label>
           <input
             type="datetime-local"
-            value={endDate ? clearDate(endDate) : ""}
+            value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             min={now}
             style={{ width: "100%", padding: "8px" }}
@@ -158,88 +169,86 @@ export default function AdminChallengePage() {
         </button>
       </div>
 
-      {draftChallenges.length > 0 && (
-        <div style={{ marginTop: "32px" }}>
-          <h2>Borradores ({draftChallenges.length})</h2>
-          {draftChallenges.map((c) => (
-            <div
-              key={c.id}
-              style={{
-                marginTop: "12px",
-                padding: "16px",
-                border: "1px solid #ffa726",
-                borderRadius: "8px",
-                background: "#fff8e1",
-              }}
-            >
-              <p><strong>Ingrediente:</strong> {c.starIngredientName}</p>
-              <p><strong>Inicio:</strong> {new Date(c.startDate).toLocaleDateString()}</p>
-              <p><strong>Cierre:</strong> {new Date(c.endDate).toLocaleDateString()}</p>
-              <button
-                onClick={() => activateMutation.mutate(c.id)}
-                disabled={activateMutation.isPending}
+      {sectionConfig.map((section) => {
+        const items = challenges?.filter((c) => c.status === section.key) ?? [];
+        if (items.length === 0) return null;
+
+        return (
+          <div key={section.key} style={{ marginTop: "32px" }}>
+            <h2>{section.title} ({items.length})</h2>
+            {items.map((c) => (
+              <div
+                key={c.id}
                 style={{
-                  marginTop: "8px",
-                  padding: "8px 20px",
-                  background: "#4caf50",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  fontWeight: 600,
+                  marginTop: "12px",
+                  padding: "16px",
+                  border: `1px solid ${section.border}`,
+                  borderRadius: "8px",
+                  background: section.bg,
+                  color: section.key === "Completed" || section.key === "Cancelled" ? "#666" : "inherit",
                 }}
               >
-                {activateMutation.isPending ? "Activando..." : "Activar desafío"}
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {activeChallenges.length > 0 && (
-        <div style={{ marginTop: "32px" }}>
-          <h2>Activos ({activeChallenges.length})</h2>
-          {activeChallenges.map((c) => (
-            <div
-              key={c.id}
-              style={{
-                marginTop: "12px",
-                padding: "16px",
-                border: "1px solid #4caf50",
-                borderRadius: "8px",
-                background: "#f1f8e9",
-              }}
-            >
-              <p><strong>Ingrediente:</strong> {c.starIngredientName}</p>
-              <p><strong>Inicio:</strong> {new Date(c.startDate).toLocaleDateString()}</p>
-              <p><strong>Cierre:</strong> {new Date(c.endDate).toLocaleDateString()}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {completedChallenges.length > 0 && (
-        <div style={{ marginTop: "32px" }}>
-          <h2>Completados ({completedChallenges.length})</h2>
-          {completedChallenges.map((c) => (
-            <div
-              key={c.id}
-              style={{
-                marginTop: "12px",
-                padding: "16px",
-                border: "1px solid #bbb",
-                borderRadius: "8px",
-                background: "#f5f5f5",
-                color: "#666",
-              }}
-            >
-              <p><strong>Ingrediente:</strong> {c.starIngredientName}</p>
-              <p><strong>Inicio:</strong> {new Date(c.startDate).toLocaleDateString()}</p>
-              <p><strong>Cierre:</strong> {new Date(c.endDate).toLocaleDateString()}</p>
-            </div>
-          ))}
-        </div>
-      )}
+                <p><strong>Ingrediente:</strong> {c.starIngredientName}</p>
+                <p><strong>Estado:</strong> {c.status}</p>
+                <p><strong>Inicio:</strong> {new Date(c.startDate).toLocaleDateString()}</p>
+                <p><strong>Cierre:</strong> {new Date(c.endDate).toLocaleDateString()}</p>
+                {c.status === "Draft" && (
+                  <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                    <button
+                      onClick={() => activateMutation.mutate(c.id)}
+                      disabled={activateMutation.isPending}
+                      style={{
+                        padding: "8px 20px",
+                        background: "#4caf50",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {activateMutation.isPending ? "Activando..." : "Activar desafío"}
+                    </button>
+                    <button
+                      onClick={() => cancelMutation.mutate(c.id)}
+                      disabled={cancelMutation.isPending}
+                      style={{
+                        padding: "8px 20px",
+                        background: "#e53935",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {cancelMutation.isPending ? "Cancelando..." : "Cancelar"}
+                    </button>
+                  </div>
+                )}
+                {c.status === "Active" && (
+                  <button
+                    onClick={() => cancelMutation.mutate(c.id)}
+                    disabled={cancelMutation.isPending}
+                    style={{
+                      marginTop: "8px",
+                      padding: "8px 20px",
+                      background: "#e53935",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {cancelMutation.isPending ? "Cancelando..." : "Cancelar desafío"}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+      })}
 
       {challenges && challenges.length === 0 && (
         <p style={{ marginTop: "24px", color: "#666" }}>No hay desafíos todavía.</p>

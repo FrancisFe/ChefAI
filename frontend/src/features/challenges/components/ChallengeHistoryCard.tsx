@@ -64,6 +64,11 @@ export default function ChallengeHistoryCard({ challenge }: { challenge: Challen
               Cargando resultados...
             </p>
           )}
+          {feedQuery.isError && (
+            <p style={{ textAlign: "center", color: "#e53935", padding: "24px 0" }}>
+              Error al cargar las recetas del desafío.
+            </p>
+          )}
           {feedQuery.data && (
             <>
               {entries.length > 0 ? (
