@@ -3,17 +3,23 @@ import useAuthStore from "../store/authStore";
 import useUiStore from "../store/uiStore";
 import { useAdmin } from "../features/auth/hooks/useAdmin";
 
-const personalLinks = [
+const personalLinks: LinkItem[] = [
   { to: "/generate-recipe", label: "Generar Receta" },
   { to: "/recipe-history", label: "Mi Historial" },
   { to: "/favorites", label: "Mis Favoritos" },
   { to: "/profile", label: "Mi Perfil" },
 ];
 
-const socialLinks = [
+interface LinkItem {
+  to: string;
+  label: string;
+  end?: boolean;
+}
+
+const socialLinks: LinkItem[] = [
   { to: "/challenge", label: "Desafío Activo" },
   { to: "/challenge/leaderboard", label: "Feed" },
-  { to: "/challenge/ranking", label: "Ranking Desafío" },
+  { to: "/challenge/ranking", label: "Ranking Desafío", end: true },
   { to: "/challenge/ranking/total", label: "Ranking Global" },
   { to: "/challenge/history", label: "Historial" },
 ];
@@ -109,7 +115,7 @@ export default function Navbar() {
         }}
       >
         {links.map((link) => (
-          <NavLink key={link.to} to={link.to} style={navLinkStyle}>
+          <NavLink key={link.to} to={link.to} end={link.end} style={navLinkStyle}>
             {link.label}
           </NavLink>
         ))}

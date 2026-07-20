@@ -2,9 +2,11 @@ import { Navigate, Outlet } from "react-router-dom";
 import useAuthStore from "../../../store/authStore";
 import PointsBar from "../../gamification/components/PointsBar";
 import Navbar from "../../../components/Navbar";
+import { useNotificationHub } from "../../../hooks/useNotificationHub";
 
 export default function ProtectedRoute() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  useNotificationHub();
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;

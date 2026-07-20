@@ -1,15 +1,38 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useActiveChallenge } from "../hooks/useActiveChallenge";
 import { useChallengeFeed, flattenFeedPages } from "../hooks/useChallengeFeed";
+import { useRankingHub } from "../../recipes/hooks/useRankingHub";
 import ChallengeRankingTable from "./ChallengeRankingTable";
 import axios from "axios";
 
 export default function ChallengeRankingPage() {
   const navigate = useNavigate();
   const { data: challenge, isLoading: loadingChallenge, error } = useActiveChallenge();
-  const feedQuery = useChallengeFeed(challenge?.id ?? null);
+  const challengeId = challenge?.id ?? null;
+  const feedQuery = useChallengeFeed(challengeId);
+  const { ranking } = useRankingHub(challengeId);
   const entries = flattenFeedPages(feedQuery.data);
   const totalCount = feedQuery.data?.pages?.[0]?.totalCount ?? 0;
+
+  const liveEntries = useMemo(() => {
+    if (ranking.length === 0) return entries;
+
+    const voteCounts = new Map(ranking.map((r) => [r.entryId, r.voteCount]));
+    const rankOrder = new Map(ranking.map((r, i) => [r.entryId, i]));
+
+    return entries
+      .map((e) => ({
+        ...e,
+        voteCount: voteCounts.get(e.entryId) ?? e.voteCount,
+      }))
+      .sort((a, b) => {
+        const aIdx = rankOrder.get(a.entryId);
+        const bIdx = rankOrder.get(b.entryId);
+        if (aIdx !== undefined && bIdx !== undefined) return aIdx - bIdx;
+        return b.voteCount - a.voteCount;
+      });
+  }, [entries, ranking]);
 
   const notFound = axios.isAxiosError(error) && error.response?.status === 404;
 
@@ -64,7 +87,7 @@ export default function ChallengeRankingPage() {
           {feedQuery.isLoading ? (
             <p>Cargando ranking...</p>
           ) : (
-            <ChallengeRankingTable entries={entries} />
+            <ChallengeRankingTable entries={liveEntries} />
           )}
 
           {feedQuery.hasNextPage && (

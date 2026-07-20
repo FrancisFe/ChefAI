@@ -82,6 +82,7 @@ namespace ChefAI.Application.Services
             }
 
             challenge.Status = ChallengeStatus.Active;
+            challenge.StartDate = DateTime.Now;
             await _challengeRepository.SaveChangesAsync();
         }
 

@@ -13,19 +13,22 @@ namespace ChefAI.Application.Services
         private readonly IRecipeRepository _recipeRepository;
         private readonly IChallengeEntryRepository _challengeEntryRepository;
         private readonly IUserProfileRepository _userProfileRepository;
+        private readonly INotificationNotifier _notificationNotifier;
 
         public GamificacionService(
             IUserPointsRepository userPointsRepository,
             IBadgeRepository badgeRepository,
             IRecipeRepository recipeRepository,
             IChallengeEntryRepository challengeEntryRepository,
-            IUserProfileRepository userProfileRepository)
+            IUserProfileRepository userProfileRepository,
+            INotificationNotifier notificationNotifier)
         {
             _userPointsRepository = userPointsRepository;
             _badgeRepository = badgeRepository;
             _recipeRepository = recipeRepository;
             _challengeEntryRepository = challengeEntryRepository;
             _userProfileRepository = userProfileRepository;
+            _notificationNotifier = notificationNotifier;
         }
 
         public async Task<PointsResult> AddPoints(int userId, GamificationAction action)
@@ -99,16 +102,17 @@ namespace ChefAI.Application.Services
                         BadgeId = badge.Id,
                         EarnedAt = DateTimeOffset.UtcNow
                     });
-
-                    results.Add(new BadgeResult(true, badge.Name, badge.IconUrl));
+                    var badgeResult = new BadgeResult(true, badge.Name, badge.IconUrl);
+                    results.Add(badgeResult);
+                    await _notificationNotifier.BadgeEarnedAsync(userId, badgeResult);
                 }
+               
             }
 
             if (newlyEarned.Count > 0)
             {
                 await _badgeRepository.AddUserBadgesAsync(newlyEarned);
             }
-
             return results;
         }
 

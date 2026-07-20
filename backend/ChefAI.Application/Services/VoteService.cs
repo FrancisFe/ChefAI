@@ -1,4 +1,5 @@
 ﻿using ChefAI.Application.DTOs;
+using ChefAI.Application.DTOs.Ranking;
 using ChefAI.Application.Interfaces.Repositories;
 using ChefAI.Application.Interfaces.Services;
 using ChefAI.Domain.Entities;
@@ -11,15 +12,17 @@ namespace ChefAI.Application.Services
         private readonly IVoteRepository _voteRepository;
         private readonly IChallengeEntryRepository _challengeEntryRepository;
         private readonly IGamificacionService _gamificacionService;
+        private readonly IRankingNotifier _rankingNotifier;
 
         public VoteService(
             IVoteRepository voteRepository,
             IChallengeEntryRepository challengeEntryRepository,
-            IGamificacionService gamificacionService)
+            IGamificacionService gamificacionService, IRankingNotifier rankingNotifier)
         {
             _voteRepository = voteRepository;
             _challengeEntryRepository = challengeEntryRepository;
             _gamificacionService = gamificacionService;
+            _rankingNotifier = rankingNotifier;
         }
 
         public async Task<(PointsResult Points, List<BadgeResult> Badges)> VoteAsync(int userId, int challengeEntryId)
@@ -49,9 +52,21 @@ namespace ChefAI.Application.Services
             entry.VoteCount++;
             await _challengeEntryRepository.SaveChangesAsync();
 
+            var entries = await _challengeEntryRepository.GetByChallengeIdAsync(entry.ChallengeId);
+            var ranking = entries.OrderByDescending(e => e.VoteCount)
+                .Select(e => new RankingEntryDto
+                {
+                    EntryId = e.Id,
+                    RecipeId = e.RecipeId,
+                    RecipeTitle = e.Recipe.Title,
+                    OwnerUserId = e.UserId,
+                    OwnerName = e.User.UserName,
+                    VoteCount = e.VoteCount
+                }).ToList();
+
             var points = await _gamificacionService.AddPoints(entry.UserId, GamificationAction.ReceiveVote);
             var badges = await _gamificacionService.EvaluateBadges(entry.UserId);
-
+            await _rankingNotifier.RankingUpdatedAsync(entry.ChallengeId, ranking);
             return (points, badges);
         }
 
@@ -72,8 +87,20 @@ namespace ChefAI.Application.Services
             entry.VoteCount = Math.Max(0, entry.VoteCount - 1);
             await _challengeEntryRepository.SaveChangesAsync();
 
-            var points = await _gamificacionService.DeductPoints(entry.UserId, 2);
+            var entries = await _challengeEntryRepository.GetByChallengeIdAsync(entry.ChallengeId);
+            var ranking = entries.OrderByDescending(e => e.VoteCount)
+                .Select(e => new RankingEntryDto
+                {
+                    EntryId = e.Id,
+                    RecipeId = e.RecipeId,
+                    RecipeTitle = e.Recipe.Title,
+                    OwnerUserId = e.UserId,
+                    OwnerName = e.User.UserName,
+                    VoteCount = e.VoteCount
+                }).ToList();
 
+            var points = await _gamificacionService.DeductPoints(entry.UserId, 2);
+            await _rankingNotifier.RankingUpdatedAsync(entry.ChallengeId, ranking);
             return points;
         }
     }

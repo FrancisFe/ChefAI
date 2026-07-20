@@ -1,11 +1,15 @@
 import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { ChallengeFeedEntry } from "../../../lib/api-client";
+import type { ConnectionStatus } from "../../recipes/hooks/useRankingHub";
 import ChallengeEntryCard from "./ChallengeEntryCard";
+import ConnectionIndicator from "./ConnectionIndicator";
 
 export default function ChallengeFeed({
   entries,
   currentUserId,
   challengeOpen,
+  connectionStatus,
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
@@ -16,6 +20,7 @@ export default function ChallengeFeed({
   entries: ChallengeFeedEntry[];
   currentUserId: number | null;
   challengeOpen: boolean;
+  connectionStatus?: ConnectionStatus;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onLoadMore: () => void;
@@ -37,14 +42,22 @@ export default function ChallengeFeed({
 
   return (
     <div>
-      <div style={{ marginBottom: "16px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "16px",
+          gap: "12px",
+        }}
+      >
         <input
           type="text"
           placeholder="Buscar por receta o autor..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{
-            width: "100%",
+            flex: 1,
             padding: "10px 14px",
             fontSize: "14px",
             border: "1px solid var(--border)",
@@ -55,6 +68,7 @@ export default function ChallengeFeed({
             boxSizing: "border-box",
           }}
         />
+        {connectionStatus && <ConnectionIndicator status={connectionStatus} />}
       </div>
 
       {filtered.length === 0 && (
@@ -65,20 +79,33 @@ export default function ChallengeFeed({
         </p>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {filtered.map((entry) => (
-          <ChallengeEntryCard
-            key={entry.entryId}
-            entry={entry}
-            rank={entries.indexOf(entry) + 1}
-            isOwnEntry={currentUserId !== null && entry.ownerUserId === Number(currentUserId)}
-            challengeOpen={challengeOpen}
-            onVote={() => onVote(entry.entryId)}
-            onUnvote={() => onUnvote(entry.entryId)}
-            isVoting={isVoting}
-          />
-        ))}
-      </div>
+      <motion.div
+        layout
+        style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+      >
+        <AnimatePresence mode="popLayout">
+          {filtered.map((entry) => (
+            <motion.div
+              key={entry.entryId}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 35 }}
+            >
+              <ChallengeEntryCard
+                entry={entry}
+                rank={entries.indexOf(entry) + 1}
+                isOwnEntry={currentUserId !== null && entry.ownerUserId === Number(currentUserId)}
+                challengeOpen={challengeOpen}
+                onVote={() => onVote(entry.entryId)}
+                onUnvote={() => onUnvote(entry.entryId)}
+                isVoting={isVoting}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </motion.div>
 
       {hasNextPage && (
         <div style={{ textAlign: "center", marginTop: "20px" }}>
