@@ -38,10 +38,10 @@ export default function ChallengeRankingTable({
               textAlign: "left",
             }}
           >
-            <th style={{ padding: "12px 8px", width: "60px", textAlign: "center" }}>#</th>
-            <th style={{ padding: "12px 8px" }}>Autor</th>
-            <th style={{ padding: "12px 8px" }}>Receta</th>
-            <th style={{ padding: "12px 8px", width: "80px", textAlign: "center" }}>Votos</th>
+            <th scope="col" style={{ padding: "12px 8px", width: "60px", textAlign: "center" }}>#</th>
+            <th scope="col" style={{ padding: "12px 8px" }}>Autor</th>
+            <th scope="col" style={{ padding: "12px 8px" }}>Receta</th>
+            <th scope="col" style={{ padding: "12px 8px", width: "80px", textAlign: "center" }}>Votos</th>
           </tr>
         </thead>
         <tbody>

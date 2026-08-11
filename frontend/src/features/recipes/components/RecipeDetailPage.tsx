@@ -115,7 +115,7 @@ export default function RecipeDetailPage() {
           ⏱ {recipe.cookingTime} min — 🍽 {recipe.servings} porciones
         </p>
 
-        <h3 style={{ color: "var(--text-h)" }}>Ingredientes</h3>
+        <h2 style={{ color: "var(--text-h)", fontSize: "18px" }}>Ingredientes</h2>
         <ul style={{ color: "var(--text)" }}>
           {recipe.ingredients.map((ing, i) => (
             <li key={i}>
@@ -130,7 +130,7 @@ export default function RecipeDetailPage() {
 
         {steps.length > 0 && (
           <>
-            <h3 style={{ color: "var(--text-h)" }}>Pasos</h3>
+            <h2 style={{ color: "var(--text-h)", fontSize: "18px" }}>Pasos</h2>
             {steps.map((step, i) => (
               <p key={i} style={{ color: "var(--text)" }}>
                 <strong>{i + 1}-</strong> {step}

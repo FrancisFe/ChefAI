@@ -124,7 +124,7 @@ function CountdownDisplay({ endDate }: { endDate: string }) {
       <p style={{ fontSize: "14px", color: "var(--text)", marginBottom: "4px" }}>
         Cierre del desafío
       </p>
-      <p style={{ fontSize: "28px", fontWeight: 700, margin: 0, color: "var(--text-h)" }}>{timeLeft}</p>
+      <p aria-hidden="true" style={{ fontSize: "28px", fontWeight: 700, margin: 0, color: "var(--text-h)" }}>{timeLeft}</p>
     </div>
   );
 }

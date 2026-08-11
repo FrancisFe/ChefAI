@@ -90,6 +90,7 @@ export default function ChallengeEntryCard({
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <span
+          aria-live="polite"
           style={{
             fontSize: "18px",
             fontWeight: 700,

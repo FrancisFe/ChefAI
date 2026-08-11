@@ -266,7 +266,11 @@ export default function RecipeGeneratorPage() {
 
       <div style={cardStyle}>
         <h2 style={{ fontSize: "18px", margin: "0 0 12px" }}>Detectar ingredientes desde imagen</h2>
+        <label htmlFor="imageUpload" style={labelStyle}>
+          Subir imagen
+        </label>
         <input
+          id="imageUpload"
           type="file"
           accept="image/*"
           onChange={handleImageChange}
@@ -378,7 +382,7 @@ export default function RecipeGeneratorPage() {
 
       <div style={{ marginTop: "20px" }}>
         {isStreaming && (
-          <p style={{ color: "var(--accent)", fontWeight: 600 }}>Generando receta...</p>
+          <p role="status" aria-live="polite" style={{ color: "var(--accent)", fontWeight: 600 }}>Generando receta...</p>
         )}
 
         {!isStreaming && recipe && (

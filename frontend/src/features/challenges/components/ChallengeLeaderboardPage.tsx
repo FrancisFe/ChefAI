@@ -92,6 +92,9 @@ export default function ChallengeLeaderboardPage() {
 
       {challenge && (
         <>
+          <span role="status" aria-live="polite" className="sr-only">
+            {ranking.length > 0 ? "Ranking actualizado en tiempo real" : ""}
+          </span>
           <div style={heroCardStyle}>
             <span style={{ fontSize: "32px" }}>⭐</span>
             <div>

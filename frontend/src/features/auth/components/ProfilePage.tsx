@@ -162,7 +162,7 @@ export default function ProfilePage() {
 
       {profile && (
         <div style={cardStyle}>
-          <label style={labelStyle}>Email</label>
+          <span style={labelStyle}>Email</span>
           <p style={{ color: "var(--text-h)" }}>{profile.email}</p>
         </div>
       )}

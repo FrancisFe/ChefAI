@@ -39,9 +39,9 @@ export default function TotalRankingPage() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
               <tr style={{ borderBottom: "2px solid var(--border)", textAlign: "left" }}>
-                <th style={{ padding: "12px 8px", width: "60px", textAlign: "center" }}>#</th>
-                <th style={{ padding: "12px 8px" }}>Usuario</th>
-                <th style={{ padding: "12px 8px", width: "100px", textAlign: "center" }}>Puntos</th>
+                <th scope="col" style={{ padding: "12px 8px", width: "60px", textAlign: "center" }}>#</th>
+                <th scope="col" style={{ padding: "12px 8px" }}>Usuario</th>
+                <th scope="col" style={{ padding: "12px 8px", width: "100px", textAlign: "center" }}>Puntos</th>
               </tr>
             </thead>
             <tbody>

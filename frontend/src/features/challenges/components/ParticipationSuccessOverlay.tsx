@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface PointsResult {
@@ -14,10 +15,25 @@ export default function ParticipationSuccessOverlay({
   onClose: () => void;
 }) {
   const navigate = useNavigate();
+  const primaryButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    primaryButtonRef.current?.focus();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   return (
     <div
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="participation-success-title"
       style={{
         position: "fixed",
         top: 0,
@@ -46,7 +62,7 @@ export default function ParticipationSuccessOverlay({
       >
         <div style={{ fontSize: "56px", marginBottom: "16px" }}>🎉</div>
 
-        <h2 style={{ margin: "0 0 8px", color: "var(--text-h)", fontSize: "22px" }}>
+        <h2 id="participation-success-title" style={{ margin: "0 0 8px", color: "var(--text-h)", fontSize: "22px" }}>
           ¡Tu receta fue enviada al desafío!
         </h2>
 
@@ -90,6 +106,7 @@ export default function ParticipationSuccessOverlay({
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <button
+            ref={primaryButtonRef}
             onClick={() => {
               onClose();
               navigate("/challenge/leaderboard");

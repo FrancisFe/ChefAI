@@ -29,6 +29,7 @@ export default function ChallengeFeed({
   isVoting: boolean;
 }) {
   const [search, setSearch] = useState("");
+  const [focused, setFocused] = useState(false);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return entries;
@@ -54,18 +55,22 @@ export default function ChallengeFeed({
         <input
           type="text"
           placeholder="Buscar por receta o autor..."
+          aria-label="Buscar por receta o autor"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           style={{
             flex: 1,
             padding: "10px 14px",
             fontSize: "14px",
-            border: "1px solid var(--border)",
+            border: `1px solid ${focused ? "var(--accent-border)" : "var(--border)"}`,
             borderRadius: "8px",
             background: "var(--bg)",
             color: "var(--text)",
             outline: "none",
             boxSizing: "border-box",
+            transition: "border-color 0.2s",
           }}
         />
         {connectionStatus && <ConnectionIndicator status={connectionStatus} />}

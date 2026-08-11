@@ -7,6 +7,7 @@ export default function ChallengeHistoryCard({ challenge }: { challenge: Challen
   const [expanded, setExpanded] = useState(false);
   const feedQuery = useChallengeFeed(expanded ? challenge.id : null);
   const entries = flattenFeedPages(feedQuery.data);
+  const contentId = `challenge-history-${challenge.id}`;
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -24,6 +25,8 @@ export default function ChallengeHistoryCard({ challenge }: { challenge: Challen
     >
       <button
         onClick={() => setExpanded(!expanded)}
+        aria-expanded={expanded}
+        aria-controls={contentId}
         style={{
           width: "100%",
           display: "flex",
@@ -52,13 +55,13 @@ export default function ChallengeHistoryCard({ challenge }: { challenge: Challen
             {formatDate(challenge.startDate)} — {formatDate(challenge.endDate)} · {challenge.participationCount} participantes
           </p>
         </div>
-        <span style={{ fontSize: "18px", color: "var(--text)", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}>
+        <span aria-hidden="true" style={{ fontSize: "18px", color: "var(--text)", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}>
           ▼
         </span>
       </button>
 
       {expanded && (
-        <div style={{ padding: "0 16px 16px", borderTop: "1px solid var(--border)" }}>
+        <div id={contentId} style={{ padding: "0 16px 16px", borderTop: "1px solid var(--border)" }}>
           {feedQuery.isLoading && (
             <p style={{ textAlign: "center", color: "var(--text)", padding: "24px 0" }}>
               Cargando resultados...
