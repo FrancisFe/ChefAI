@@ -18,12 +18,66 @@ interface ChallengeResult {
   status: string;
 }
 
+const cardStyle: React.CSSProperties = {
+  backgroundColor: "var(--bg)",
+  border: "1px solid var(--border)",
+  borderRadius: "12px",
+  boxShadow: "var(--shadow)",
+  padding: "24px",
+};
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: "14px",
+  fontWeight: 600,
+  color: "var(--text-h)",
+  marginBottom: "6px",
+};
+
+const baseInputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "10px 12px",
+  border: "1px solid var(--border)",
+  borderRadius: "8px",
+  fontSize: "15px",
+  backgroundColor: "var(--bg)",
+  color: "var(--text-h)",
+  boxSizing: "border-box",
+  outline: "none",
+  transition: "border-color 0.2s",
+};
+
+const backButtonStyle: React.CSSProperties = {
+  background: "none",
+  border: "none",
+  color: "var(--text)",
+  cursor: "pointer",
+  fontSize: "15px",
+  padding: "0",
+  marginBottom: "16px",
+  transition: "color 0.2s",
+};
+
+const primaryButtonStyle: React.CSSProperties = {
+  padding: "10px 24px",
+  backgroundColor: "var(--accent)",
+  color: "#fff",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: 600,
+  transition: "opacity 0.2s, box-shadow 0.2s",
+};
+
+type FieldName = "ingredient" | "startDate" | "endDate";
+
 export default function AdminChallengePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [ingredientId, setIngredientId] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [focusedField, setFocusedField] = useState<FieldName | null>(null);
 
   const { data: ingredients } = useQuery<Ingredient[]>({
     queryKey: ["challenge", "ingredients"],
@@ -91,31 +145,44 @@ export default function AdminChallengePage() {
 
   const now = new Date().toLocaleString("sv-SE").slice(0, 16);
 
-  const sectionConfig: { key: string; title: string; border: string; bg: string }[] = [
-    { key: "Draft", title: "Borradores", border: "#ffa726", bg: "#fff8e1" },
-    { key: "Active", title: "Activos", border: "#4caf50", bg: "#f1f8e9" },
-    { key: "Completed", title: "Completados", border: "#bbb", bg: "#f5f5f5" },
-    { key: "Cancelled", title: "Cancelados", border: "#e53935", bg: "#ffebee" },
+  const sectionConfig: { key: string; title: string; color: string }[] = [
+    { key: "Draft", title: "Borradores", color: "#ffa726" },
+    { key: "Active", title: "Activos", color: "#4caf50" },
+    { key: "Completed", title: "Completados", color: "#9e9e9e" },
+    { key: "Cancelled", title: "Cancelados", color: "#e53935" },
   ];
+
+  const fieldStyle = (field: FieldName): React.CSSProperties => ({
+    ...baseInputStyle,
+    borderColor: focusedField === field ? "var(--accent-border)" : undefined,
+  });
 
   return (
     <div style={{ maxWidth: "800px" }}>
-      <button onClick={() => navigate(-1)} style={{ marginBottom: "16px", cursor: "pointer" }}>
+      <button
+        onClick={() => navigate(-1)}
+        style={backButtonStyle}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text)")}
+      >
         ← Volver
       </button>
       <h1>Administrar desafíos</h1>
 
-      <div style={{ padding: "24px", border: "1px solid #ddd", borderRadius: "8px", marginTop: "16px" }}>
-        <h2>Crear nuevo desafío</h2>
+      <div style={{ ...cardStyle, marginTop: "16px" }}>
+        <h2 style={{ fontSize: "18px", margin: "0 0 16px" }}>Crear nuevo desafío</h2>
 
         <div style={{ marginBottom: "12px" }}>
-          <label style={{ display: "block", marginBottom: "4px", fontWeight: 500 }}>
+          <label htmlFor="ingredient" style={labelStyle}>
             Ingrediente estrella
           </label>
           <select
+            id="ingredient"
             value={ingredientId}
             onChange={(e) => setIngredientId(Number(e.target.value))}
-            style={{ width: "100%", padding: "8px" }}
+            onFocus={() => setFocusedField("ingredient")}
+            onBlur={() => setFocusedField(null)}
+            style={fieldStyle("ingredient")}
           >
             <option value={0}>Seleccionar ingrediente...</option>
             {ingredients?.map((i) => (
@@ -127,28 +194,34 @@ export default function AdminChallengePage() {
         </div>
 
         <div style={{ marginBottom: "12px" }}>
-          <label style={{ display: "block", marginBottom: "4px", fontWeight: 500 }}>
+          <label htmlFor="startDate" style={labelStyle}>
             Fecha de inicio
           </label>
           <input
+            id="startDate"
             type="datetime-local"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             min={now}
-            style={{ width: "100%", padding: "8px" }}
+            onFocus={() => setFocusedField("startDate")}
+            onBlur={() => setFocusedField(null)}
+            style={fieldStyle("startDate")}
           />
         </div>
 
         <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", marginBottom: "4px", fontWeight: 500 }}>
+          <label htmlFor="endDate" style={labelStyle}>
             Fecha de cierre
           </label>
           <input
+            id="endDate"
             type="datetime-local"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             min={now}
-            style={{ width: "100%", padding: "8px" }}
+            onFocus={() => setFocusedField("endDate")}
+            onBlur={() => setFocusedField(null)}
+            style={fieldStyle("endDate")}
           />
         </div>
 
@@ -156,13 +229,15 @@ export default function AdminChallengePage() {
           onClick={handleCreate}
           disabled={!ingredientId || !startDate || !endDate || createMutation.isPending}
           style={{
-            padding: "10px 24px",
-            background: "#1976d2",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontWeight: 600,
+            ...primaryButtonStyle,
+            opacity:
+              !ingredientId || !startDate || !endDate || createMutation.isPending
+                ? 0.6
+                : 1,
+            cursor:
+              !ingredientId || !startDate || !endDate || createMutation.isPending
+                ? "not-allowed"
+                : "pointer",
           }}
         >
           {createMutation.isPending ? "Creando..." : "Crear desafío"}
@@ -182,10 +257,10 @@ export default function AdminChallengePage() {
                 style={{
                   marginTop: "12px",
                   padding: "16px",
-                  border: `1px solid ${section.border}`,
+                  border: `1px solid ${section.color}`,
                   borderRadius: "8px",
-                  background: section.bg,
-                  color: section.key === "Completed" || section.key === "Cancelled" ? "#666" : "inherit",
+                  background: `${section.color}14`,
+                  color: "var(--text)",
                 }}
               >
                 <p><strong>Ingrediente:</strong> {c.starIngredientName}</p>
@@ -202,9 +277,10 @@ export default function AdminChallengePage() {
                         background: "#4caf50",
                         color: "#fff",
                         border: "none",
-                        borderRadius: "6px",
-                        cursor: "pointer",
+                        borderRadius: "8px",
+                        cursor: activateMutation.isPending ? "not-allowed" : "pointer",
                         fontWeight: 600,
+                        opacity: activateMutation.isPending ? 0.6 : 1,
                       }}
                     >
                       {activateMutation.isPending ? "Activando..." : "Activar desafío"}
@@ -217,9 +293,10 @@ export default function AdminChallengePage() {
                         background: "#e53935",
                         color: "#fff",
                         border: "none",
-                        borderRadius: "6px",
-                        cursor: "pointer",
+                        borderRadius: "8px",
+                        cursor: cancelMutation.isPending ? "not-allowed" : "pointer",
                         fontWeight: 600,
+                        opacity: cancelMutation.isPending ? 0.6 : 1,
                       }}
                     >
                       {cancelMutation.isPending ? "Cancelando..." : "Cancelar"}
@@ -236,9 +313,10 @@ export default function AdminChallengePage() {
                       background: "#e53935",
                       color: "#fff",
                       border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
+                      borderRadius: "8px",
+                      cursor: cancelMutation.isPending ? "not-allowed" : "pointer",
                       fontWeight: 600,
+                      opacity: cancelMutation.isPending ? 0.6 : 1,
                     }}
                   >
                     {cancelMutation.isPending ? "Cancelando..." : "Cancelar desafío"}
@@ -251,7 +329,7 @@ export default function AdminChallengePage() {
       })}
 
       {challenges && challenges.length === 0 && (
-        <p style={{ marginTop: "24px", color: "#666" }}>No hay desafíos todavía.</p>
+        <p style={{ marginTop: "24px", color: "var(--text)" }}>No hay desafíos todavía.</p>
       )}
     </div>
   );
