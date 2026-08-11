@@ -54,16 +54,22 @@ export default function ChallengeEntryCard({
       </span>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <span
+        <button
+          type="button"
           onClick={() => navigate(`/recipe/${entry.recipeId}`)}
           style={{
             margin: 0,
+            padding: 0,
+            background: "none",
+            border: "none",
+            textAlign: "left",
             fontWeight: 600,
             fontSize: "16px",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
             display: "block",
+            width: "100%",
             cursor: "pointer",
             color: "var(--accent)",
             textDecoration: "none",
@@ -76,7 +82,7 @@ export default function ChallengeEntryCard({
           }}
         >
           {entry.recipeTitle}
-        </span>
+        </button>
         <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--text)" }}>
           👤 {entry.ownerName}
         </p>

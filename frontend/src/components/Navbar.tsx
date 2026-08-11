@@ -46,6 +46,7 @@ export default function Navbar() {
 
   return (
     <nav
+      aria-label="Principal"
       style={{
         display: "flex",
         alignItems: "center",
@@ -56,9 +57,13 @@ export default function Navbar() {
         flexWrap: "wrap",
       }}
     >
-      <span
+      <button
+        type="button"
         onClick={() => navigate("/")}
         style={{
+          background: "none",
+          border: "none",
+          padding: 0,
           fontSize: "20px",
           fontWeight: 700,
           color: "var(--text-h)",
@@ -67,10 +72,12 @@ export default function Navbar() {
         }}
       >
         ChefAI
-      </span>
+      </button>
 
-      <div
+      <button
+        type="button"
         onClick={toggleMode}
+        aria-pressed={socialMode}
         style={{
           display: "inline-flex",
           borderRadius: "20px",
@@ -78,6 +85,8 @@ export default function Navbar() {
           border: "1px solid var(--border)",
           cursor: "pointer",
           userSelect: "none",
+          padding: 0,
+          background: "transparent",
         }}
       >
         <span
@@ -104,7 +113,7 @@ export default function Navbar() {
         >
           Social
         </span>
-      </div>
+      </button>
 
       <div
         style={{

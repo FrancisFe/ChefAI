@@ -23,9 +23,20 @@ export default function RecipeCard({ recipe }: { recipe: RecipeHistoryItem }) {
     minute: "2-digit",
   });
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      navigate(`/recipe/${recipe.id}`);
+    }
+  };
+
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => navigate(`/recipe/${recipe.id}`)}
+      onKeyDown={handleKeyDown}
+      aria-label={`Ver receta ${recipe.title}`}
       style={{
         border: "1px solid var(--border)",
         borderRadius: "12px",

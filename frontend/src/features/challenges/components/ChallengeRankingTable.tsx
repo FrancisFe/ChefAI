@@ -51,9 +51,7 @@ export default function ChallengeRankingTable({
             return (
               <tr
                 key={entry.entryId}
-                onClick={() => navigate(`/recipe/${entry.recipeId}`)}
                 style={{
-                  cursor: "pointer",
                   borderBottom: "1px solid var(--border)",
                   transition: "background 0.15s",
                 }}
@@ -98,7 +96,22 @@ export default function ChallengeRankingTable({
                     maxWidth: "250px",
                   }}
                 >
-                  {entry.recipeTitle}
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/recipe/${entry.recipeId}`)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                      color: "inherit",
+                      fontWeight: "inherit",
+                      fontSize: "inherit",
+                      textAlign: "left",
+                    }}
+                  >
+                    {entry.recipeTitle}
+                  </button>
                 </td>
                 <td
                   style={{
