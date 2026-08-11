@@ -1,0 +1,43 @@
+# ==========================================
+# ETAPA 1: BUILD
+# ==========================================
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
+WORKDIR /src
+
+# Copiamos primero los .csproj para aprovechar la caché de Docker
+COPY ChefAI.API/ChefAI.API.csproj ChefAI.API/
+COPY ChefAI.Application/ChefAI.Application.csproj ChefAI.Application/
+COPY ChefAI.Domain/ChefAI.Domain.csproj ChefAI.Domain/
+COPY ChefAI.Infraestructure/ChefAI.Infraestructure.csproj ChefAI.Infraestructure/
+
+# Restauramos las dependencias
+RUN dotnet restore ChefAI.API/ChefAI.API.csproj
+
+# Ahora copiamos el resto del código
+COPY . .
+
+# Compilamos y publicamos para producción
+RUN dotnet publish ChefAI.API/ChefAI.API.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore
+
+
+# ==========================================
+# ETAPA 2: RUNTIME
+# ==========================================
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+
+WORKDIR /app
+
+# Railway utilizará el puerto 8080
+ENV ASPNETCORE_HTTP_PORTS=8080
+
+EXPOSE 8080
+
+# Copiamos únicamente el resultado publicado
+COPY --from=build /app/publish .
+
+# Arrancamos la API
+ENTRYPOINT ["dotnet", "ChefAI.API.dll"]

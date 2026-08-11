@@ -9,3 +9,5 @@ dist
 # VS
 .vs
 /AGENTS.md
+
+.env.*
