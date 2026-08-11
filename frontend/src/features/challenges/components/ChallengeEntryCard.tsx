@@ -125,6 +125,14 @@ export default function ChallengeEntryCard({
                 ? "Quitar voto"
                 : "Votar"
             }
+            aria-label={
+              !challengeOpen
+                ? "El desafío está cerrado"
+                : entry.hasVoted
+                ? "Quitar voto"
+                : "Votar por esta receta"
+            }
+            aria-pressed={entry.hasVoted}
             style={{
               background: "none",
               border: "none",

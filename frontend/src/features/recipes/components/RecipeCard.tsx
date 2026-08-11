@@ -70,6 +70,8 @@ export default function RecipeCard({ recipe }: { recipe: RecipeHistoryItem }) {
             transition: "transform 0.15s",
           }}
           title={recipe.isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+          aria-label={recipe.isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+          aria-pressed={recipe.isFavorite}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = "scale(1.1)";
           }}

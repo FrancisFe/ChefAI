@@ -59,6 +59,8 @@ export default function RecipeDisplay({ recipe, recipeId, isFavorite = false }: 
                 transition: "transform 0.2s",
               }}
               title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+              aria-label={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+              aria-pressed={isFavorite}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "scale(1.1)";
               }}
