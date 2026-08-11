@@ -5,6 +5,66 @@ import { useProfile } from "../hooks/useProfile";
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
 import BadgeGrid from "../../gamification/components/BadgeGrid";
 
+const cardStyle: React.CSSProperties = {
+  backgroundColor: "var(--bg)",
+  border: "1px solid var(--border)",
+  borderRadius: "12px",
+  boxShadow: "var(--shadow)",
+  padding: "20px",
+  marginBottom: "20px",
+};
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: "14px",
+  fontWeight: 600,
+  color: "var(--text-h)",
+  marginBottom: "6px",
+};
+
+const baseInputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "10px 12px",
+  border: "1px solid var(--border)",
+  borderRadius: "8px",
+  fontSize: "15px",
+  backgroundColor: "var(--bg)",
+  color: "var(--text-h)",
+  boxSizing: "border-box",
+  outline: "none",
+  transition: "border-color 0.2s",
+};
+
+const primaryButtonStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "12px",
+  backgroundColor: "var(--accent)",
+  color: "#fff",
+  border: "none",
+  borderRadius: "8px",
+  fontSize: "16px",
+  fontWeight: 600,
+  cursor: "pointer",
+  transition: "opacity 0.2s, box-shadow 0.2s",
+};
+
+const backButtonStyle: React.CSSProperties = {
+  background: "none",
+  border: "none",
+  color: "var(--text)",
+  cursor: "pointer",
+  fontSize: "15px",
+  padding: "0",
+  marginBottom: "16px",
+  transition: "color 0.2s",
+};
+
+const fieldGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+  gap: "12px",
+};
+
 function timeSpanToMinutes(ts: string): number {
   const parts = ts.split(":");
   if (parts.length === 3) {
@@ -19,6 +79,8 @@ function minutesToTimeSpan(minutes: number): string {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:00`;
 }
 
+type FieldName = "servings" | "time" | "difficulty";
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { data: profile, isLoading: isLoadingProfile } = useProfile();
@@ -29,6 +91,7 @@ export default function ProfilePage() {
   const [defaultServings, setDefaultServings] = useState(1);
   const [cookingTimeMinutes, setCookingTimeMinutes] = useState(30);
   const [preferredDifficulty, setPreferredDifficulty] = useState("easy");
+  const [focusedField, setFocusedField] = useState<FieldName | null>(null);
   const hasInitialized = useRef(false);
 
   useEffect(() => {
@@ -61,101 +124,140 @@ export default function ProfilePage() {
     });
   };
 
+  const fieldStyle = (field: FieldName): React.CSSProperties => ({
+    ...baseInputStyle,
+    borderColor: focusedField === field ? "var(--accent-border)" : undefined,
+  });
+
   if (isLoadingProfile || isLoadingRestrictions) {
     return (
-      <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
-        <button onClick={() => navigate(-1)} style={{ marginBottom: "16px", cursor: "pointer" }}>← Volver</button>
-        <p>Cargando...</p>
+      <div>
+        <button
+          onClick={() => navigate(-1)}
+          style={backButtonStyle}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text)")}
+        >
+          ← Volver
+        </button>
+        <div style={cardStyle}>
+          <p style={{ color: "var(--text)" }}>Cargando...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
-      <button onClick={() => navigate(-1)} style={{ marginBottom: "16px", cursor: "pointer" }}>← Volver</button>
+    <div>
+      <button
+        onClick={() => navigate(-1)}
+        style={backButtonStyle}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text)")}
+      >
+        ← Volver
+      </button>
+
       <h1>Mi Perfil</h1>
 
       {profile && (
-        <div style={{ marginBottom: "20px" }}>
-          <p><strong>Email:</strong> {profile.email}</p>
+        <div style={cardStyle}>
+          <label style={labelStyle}>Email</label>
+          <p style={{ color: "var(--text-h)" }}>{profile.email}</p>
         </div>
       )}
 
-      <div style={{ marginBottom: "20px" }}>
-        <h2>Preferencias de Recetas</h2>
+      <div style={cardStyle}>
+        <h2 style={{ fontSize: "18px", margin: "0 0 16px" }}>Preferencias de Recetas</h2>
 
-        <div style={{ marginBottom: "12px" }}>
-          <label>
-            <strong>Porciones por defecto:</strong>
+        <div style={fieldGridStyle}>
+          <div>
+            <label htmlFor="servings" style={labelStyle}>
+              Porciones por defecto
+            </label>
             <input
+              id="servings"
               type="number"
               min={1}
               value={defaultServings}
               onChange={(e) => setDefaultServings(Number(e.target.value))}
-              style={{ display: "block", marginTop: "4px", padding: "6px", width: "100px" }}
+              onFocus={() => setFocusedField("servings")}
+              onBlur={() => setFocusedField(null)}
+              style={fieldStyle("servings")}
             />
-          </label>
-        </div>
+          </div>
 
-        <div style={{ marginBottom: "12px" }}>
-          <label>
-            <strong>Tiempo de cocción máximo (minutos):</strong>
+          <div>
+            <label htmlFor="time" style={labelStyle}>
+              Tiempo de cocción máx (min)
+            </label>
             <input
+              id="time"
               type="number"
               min={1}
               value={cookingTimeMinutes}
               onChange={(e) => setCookingTimeMinutes(Number(e.target.value))}
-              style={{ display: "block", marginTop: "4px", padding: "6px", width: "100px" }}
+              onFocus={() => setFocusedField("time")}
+              onBlur={() => setFocusedField(null)}
+              style={fieldStyle("time")}
             />
-          </label>
-        </div>
+          </div>
 
-        <div style={{ marginBottom: "12px" }}>
-          <label>
-            <strong>Dificultad preferida:</strong>
+          <div>
+            <label htmlFor="difficulty" style={labelStyle}>
+              Dificultad preferida
+            </label>
             <select
+              id="difficulty"
               value={preferredDifficulty}
               onChange={(e) => setPreferredDifficulty(e.target.value)}
-              style={{ display: "block", marginTop: "4px", padding: "6px" }}
+              onFocus={() => setFocusedField("difficulty")}
+              onBlur={() => setFocusedField(null)}
+              style={fieldStyle("difficulty")}
             >
               <option value="easy">Fácil</option>
               <option value="medium">Media</option>
               <option value="hard">Difícil</option>
             </select>
-          </label>
+          </div>
         </div>
       </div>
 
-      <div style={{ marginBottom: "20px" }}>
-        <h2>Restricciones Dietéticas</h2>
+      <div style={cardStyle}>
+        <h2 style={{ fontSize: "18px", margin: "0 0 16px" }}>Restricciones Dietéticas</h2>
         {restrictions && restrictions.length > 0 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {restrictions.map((restriction) => (
-              <label
-                key={restriction.name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  padding: "8px",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedRestrictionNames.includes(restriction.name)}
-                  onChange={(e) =>
-                    handleRestrictionChange(restriction.name, e.target.checked)
-                  }
-                />
-                <span>{restriction.name}</span>
-              </label>
-            ))}
+            {restrictions.map((restriction) => {
+              const isSelected = selectedRestrictionNames.includes(restriction.name);
+              return (
+                <label
+                  key={restriction.name}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    padding: "10px 14px",
+                    border: `1px solid ${isSelected ? "var(--accent-border)" : "var(--border)"}`,
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    backgroundColor: isSelected ? "var(--accent-bg)" : "var(--bg)",
+                    transition: "border-color 0.2s, background-color 0.2s",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={(e) =>
+                      handleRestrictionChange(restriction.name, e.target.checked)
+                    }
+                  />
+                  <span style={{ color: "var(--text-h)" }}>{restriction.name}</span>
+                </label>
+              );
+            })}
           </div>
         ) : (
-          <p>No hay restricciones dietéticas disponibles</p>
+          <p style={{ color: "var(--text)" }}>No hay restricciones dietéticas disponibles</p>
         )}
       </div>
 
@@ -163,13 +265,16 @@ export default function ProfilePage() {
         onClick={handleSave}
         disabled={isUpdating}
         style={{
-          padding: "10px 20px",
-          backgroundColor: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
+          ...primaryButtonStyle,
+          opacity: isUpdating ? 0.6 : 1,
           cursor: isUpdating ? "not-allowed" : "pointer",
-          opacity: isUpdating ? 0.5 : 1,
+          boxShadow: isUpdating ? "none" : undefined,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = "var(--shadow)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = "none";
         }}
       >
         {isUpdating ? "Guardando..." : "Guardar"}

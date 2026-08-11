@@ -27,8 +27,8 @@ export default function RestrictionsChips({ className, style }: RestrictionsChip
         <div
           key={restriction.name}
           style={{
-            backgroundColor: "#e3f2fd",
-            color: "#1976d2",
+            backgroundColor: "var(--accent-bg)",
+            color: "var(--accent)",
             padding: "6px 12px",
             borderRadius: "16px",
             fontSize: "14px",
@@ -38,7 +38,7 @@ export default function RestrictionsChips({ className, style }: RestrictionsChip
             gap: "4px",
           }}
         >
-          <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#1976d2" }} />
+          <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--accent)" }} />
           {restriction.name}
         </div>
       ))}
