@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
   <QueryClientProvider client={queryClient}>
     <RouterProvider router={router} />
-    <ReactQueryDevtools initialIsOpen={false} />
+    {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     <Toaster position="bottom-right" richColors />
   </QueryClientProvider>
   </StrictMode>,
