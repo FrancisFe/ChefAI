@@ -27,19 +27,25 @@ export default function RecipeCard({ recipe }: { recipe: RecipeHistoryItem }) {
     <div
       onClick={() => navigate(`/recipe/${recipe.id}`)}
       style={{
-        border: "1px solid #ddd",
-        borderRadius: "8px",
+        border: "1px solid var(--border)",
+        borderRadius: "12px",
         padding: "20px",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-        backgroundColor: recipe.isFavorite ? "#fff9e6" : "#fff",
+        boxShadow: "none",
+        backgroundColor: recipe.isFavorite ? "var(--accent-bg)" : "var(--bg)",
         cursor: "pointer",
-        transition: "box-shadow 0.2s",
+        transition: "box-shadow 0.2s, border-color 0.2s",
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)")}
-      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)")}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = "var(--shadow)";
+        e.currentTarget.style.borderColor = "var(--accent-border)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = "none";
+        e.currentTarget.style.borderColor = "var(--border)";
+      }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <h2 style={{ margin: 0 }}>{recipe.title}</h2>
+        <h2 style={{ margin: 0, color: "var(--text-h)" }}>{recipe.title}</h2>
         <button
           onClick={handleFavoriteClick}
           style={{
@@ -49,20 +55,28 @@ export default function RecipeCard({ recipe }: { recipe: RecipeHistoryItem }) {
             fontSize: "24px",
             lineHeight: 1,
             padding: 0,
+            color: recipe.isFavorite ? "var(--accent)" : "var(--text)",
+            transition: "transform 0.15s",
           }}
           title={recipe.isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+          }}
         >
           {recipe.isFavorite ? "♥" : "♡"}
         </button>
       </div>
 
-      <p style={{ fontSize: "13px", color: "#888", margin: "8px 0" }}>{dateStr}</p>
-      <p style={{ fontSize: "14px", color: "#666", marginBottom: "12px" }}>
+      <p style={{ fontSize: "13px", color: "var(--text)", margin: "8px 0" }}>{dateStr}</p>
+      <p style={{ fontSize: "14px", color: "var(--text)", marginBottom: "12px" }}>
         ⏱ {recipe.cookingTime} min — 🍽 {recipe.servings} porciones
       </p>
 
-      <h3 style={{ fontSize: "16px", marginBottom: "8px" }}>Ingredientes:</h3>
-      <ul style={{ fontSize: "14px", marginBottom: "12px" }}>
+      <h3 style={{ fontSize: "16px", marginBottom: "8px", color: "var(--text-h)" }}>Ingredientes:</h3>
+      <ul style={{ fontSize: "14px", marginBottom: "12px", color: "var(--text)" }}>
         {recipe.ingredients.map((ing, i) => {
           const quantityText = ing.quantity === null || ing.unit === null ? "A gusto" : `${ing.quantity} ${ing.unit}`;
           return <li key={i}>{quantityText} — {ing.name}</li>;
