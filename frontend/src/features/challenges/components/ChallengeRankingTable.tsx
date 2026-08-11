@@ -16,7 +16,7 @@ export default function ChallengeRankingTable({
 
   if (entries.length === 0) {
     return (
-      <p style={{ textAlign: "center", color: "#888", padding: "32px 0" }}>
+      <p style={{ textAlign: "center", color: "var(--text)", padding: "32px 0" }}>
         Aún no hay participaciones.
       </p>
     );

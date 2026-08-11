@@ -77,7 +77,7 @@ export default function ChallengeEntryCard({
         >
           {entry.recipeTitle}
         </span>
-        <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#888" }}>
+        <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--text)" }}>
           👤 {entry.ownerName}
         </p>
       </div>
@@ -126,7 +126,7 @@ export default function ChallengeEntryCard({
               fontSize: "22px",
               padding: "4px 8px",
               borderRadius: "6px",
-              color: entry.hasVoted ? "var(--accent)" : "#aaa",
+              color: entry.hasVoted ? "var(--accent)" : "var(--text)",
               opacity: isVoting || !challengeOpen ? 0.3 : 1,
               transition: "color 0.15s, transform 0.1s",
             }}

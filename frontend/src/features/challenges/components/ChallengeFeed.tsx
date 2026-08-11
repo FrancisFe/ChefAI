@@ -72,7 +72,7 @@ export default function ChallengeFeed({
       </div>
 
       {filtered.length === 0 && (
-        <p style={{ textAlign: "center", color: "#888", padding: "32px 0" }}>
+        <p style={{ textAlign: "center", color: "var(--text)", padding: "32px 0" }}>
           {entries.length === 0
             ? "Aún no hay participaciones. ¡Sé el primero!"
             : "No se encontraron resultados."}
