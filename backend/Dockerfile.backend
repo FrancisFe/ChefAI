@@ -39,5 +39,5 @@ EXPOSE 8080
 # Copiamos únicamente el resultado publicado
 COPY --from=build /app/publish .
 
-# Arrancamos la API
-ENTRYPOINT ["dotnet", "ChefAI.API.dll"]
+# Arrancamos la API (honra el puerto que inyecta Render via $PORT)
+CMD ["sh", "-c", "ASPNETCORE_HTTP_PORTS=${PORT:-8080} dotnet ChefAI.API.dll"]

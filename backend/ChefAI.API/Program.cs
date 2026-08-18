@@ -146,7 +146,11 @@ var app = builder.Build();
 
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseHttpsRedirection();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
@@ -160,5 +164,11 @@ if (app.Environment.IsDevelopment())
 app.MapControllers();
 app.MapHub<RankingHub>("/hubs/ranking");
 app.MapHub<NotificationHub>("/hubs/notifications");
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 app.Run();
