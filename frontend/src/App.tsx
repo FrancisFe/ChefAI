@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import useAuthStore from "./store/authStore";
 import useUiStore from "./store/uiStore";
 import { useNavigate } from "react-router-dom";
-import './App.css'
 
 function App() {
   const syncAuthState = useAuthStore((s) => s.syncAuthState);

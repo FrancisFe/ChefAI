@@ -26,18 +26,6 @@ export default function RecipeDisplay({ recipe, recipeId, isFavorite = false }: 
 
   return (
     <div>
-      <style>{`
-        .fade-section {
-          opacity: 0;
-          transform: translateY(12px);
-          transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-        .fade-section.show {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      `}</style>
-
       <div className={`fade-section ${visible(0) ? "show" : ""}`}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 style={{ color: "var(--text-h)" }}>{recipe.title}</h2>

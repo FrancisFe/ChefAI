@@ -23,15 +23,15 @@ namespace ChefAI.Infraestructure.Configs
                 .UsingEntity(j => j.ToTable("user_profile_dietary_restriction"));
 
             builder.HasData(
-                new DietaryRestriction { Id = 1, Name = "Vegetarian", Description = "No meat or fish, but may include dairy and eggs." },
-                new DietaryRestriction { Id = 2, Name = "Vegan", Description = "No animal products, including dairy and eggs." },
-                new DietaryRestriction { Id = 3, Name = "Gluten-Free", Description = "No gluten-containing grains such as wheat, barley, and rye." },
-                new DietaryRestriction { Id = 4, Name = "Dairy-Free", Description = "No dairy products." },
-                new DietaryRestriction { Id = 5, Name = "Nut-Free", Description = "No nuts or products containing nuts." },
-                new DietaryRestriction { Id = 6, Name = "Pescatarian", Description = "No meat, but includes fish and seafood." },
-                new DietaryRestriction { Id = 7, Name = "Keto", Description = "Low-carb, high-fat diet that focuses on foods like meat, fish, eggs, dairy, nuts, and low-carb vegetables." },
-                new DietaryRestriction { Id = 8, Name = "No-Pork", Description = "Excludes pork and pork products." },
-                new DietaryRestriction { Id = 9, Name = "Low-Carb", Description = "Limits carbohydrate intake, focusing on proteins and fats." }
+                new DietaryRestriction { Id = 1, Name = "Vegetariano", Description = "Sin carne ni pescado, pero puede incluir lácteos y huevos." },
+                new DietaryRestriction { Id = 2, Name = "Vegano", Description = "Sin productos de origen animal, incluidos lácteos y huevos." },
+                new DietaryRestriction { Id = 3, Name = "Sin Gluten", Description = "Sin cereales que contengan gluten como trigo, cebada y centeno." },
+                new DietaryRestriction { Id = 4, Name = "Sin Lácteos", Description = "Sin productos lácteos." },
+                new DietaryRestriction { Id = 5, Name = "Sin Frutos Secos", Description = "Sin frutos secos ni productos que los contengan." },
+                new DietaryRestriction { Id = 6, Name = "Pescetariano", Description = "Sin carne, pero incluye pescado y mariscos." },
+                new DietaryRestriction { Id = 7, Name = "Keto", Description = "Dieta baja en carbohidratos y alta en grasas, enfocada en carnes, pescado, huevos, lácteos, frutos secos y vegetales bajos en carbohidratos." },
+                new DietaryRestriction { Id = 8, Name = "Sin Cerdo", Description = "Excluye cerdo y productos derivados." },
+                new DietaryRestriction { Id = 9, Name = "Bajo en Carbohidratos", Description = "Limita la ingesta de carbohidratos, centrándose en proteínas y grasas." }
                );
         }
     }

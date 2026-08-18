@@ -22,6 +22,10 @@ export default function BadgeGrid() {
         return (
           <div
             key={badge.id}
+            tabIndex={isLocked ? 0 : undefined}
+            role={isLocked ? "button" : undefined}
+            aria-label={isLocked ? `Bloqueado: ${badge.name}` : undefined}
+            aria-describedby={isLocked && hoveredId === badge.id ? `badge-tip-${badge.id}` : undefined}
             style={{
               position: "relative",
               display: "flex",
@@ -37,11 +41,13 @@ export default function BadgeGrid() {
                 : "var(--accent-bg)",
               opacity: isLocked ? 0.55 : 1,
               filter: isLocked ? "grayscale(0.8)" : "none",
-              cursor: isLocked ? "pointer" : "default",
+              cursor: "default",
               transition: "opacity 0.2s, filter 0.2s",
             }}
             onMouseEnter={() => isLocked && setHoveredId(badge.id)}
             onMouseLeave={() => setHoveredId(null)}
+            onFocus={() => isLocked && setHoveredId(badge.id)}
+            onBlur={() => setHoveredId(null)}
           >
             {isLocked && (
               <span style={{ fontSize: "24px", position: "absolute", top: "4px", right: "6px" }}>
@@ -61,6 +67,8 @@ export default function BadgeGrid() {
             </span>
             {isLocked && hoveredId === badge.id && (
               <div
+                id={`badge-tip-${badge.id}`}
+                role="tooltip"
                 style={{
                   position: "absolute",
                   bottom: "calc(100% + 8px)",

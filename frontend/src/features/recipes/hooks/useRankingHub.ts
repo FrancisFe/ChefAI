@@ -15,7 +15,9 @@ export type ConnectionStatus = "disconnected" | "connecting" | "connected" | "re
 
 export function useRankingHub(challengeId: number | null) {
   const [ranking, setRanking] = useState<RankingEntry[]>([]);
-  const [connectionState, setConnectionState] = useState<ConnectionStatus>("disconnected");
+  const [connectionState, setConnectionState] = useState<ConnectionStatus>(
+    challengeId === null ? "disconnected" : "connecting"
+  );
   const [error, setError] = useState<string | null>(null);
   const connectionRef = useRef<HubConnection | null>(null);
 
@@ -24,7 +26,6 @@ export function useRankingHub(challengeId: number | null) {
 
     const connection = createHubConnection(HUB_URLS.ranking);
     connectionRef.current = connection;
-    setConnectionState("connecting");
 
     connection.on("RankingUpdated", (data: RankingEntry[]) => {
       setRanking(data);
@@ -54,6 +55,7 @@ export function useRankingHub(challengeId: number | null) {
       });
 
     return () => {
+      setConnectionState("connecting");
       connection
         .invoke("LeaveChallenge", String(challengeId))
         .finally(() => {
