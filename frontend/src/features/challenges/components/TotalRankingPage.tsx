@@ -20,7 +20,7 @@ export default function TotalRankingPage() {
   return (
     <div>
       <h1>Ranking Global</h1>
-      <p style={{ color: "#666", marginBottom: "24px" }}>
+      <p style={{ color: "var(--text)", marginBottom: "24px" }}>
         Puntos totales acumulados por votos recibidos en todos los desafíos.
       </p>
 
@@ -30,7 +30,7 @@ export default function TotalRankingPage() {
         <div style={{ textAlign: "center", padding: "40px", border: "1px solid var(--border)", borderRadius: "12px" }}>
           <p style={{ fontSize: "48px", margin: 0 }}>🏆</p>
           <h2>Todavía no hay puntos</h2>
-          <p style={{ color: "#666" }}>Participá en desafíos para aparecer en el ranking.</p>
+          <p style={{ color: "var(--text)" }}>Participá en desafíos para aparecer en el ranking.</p>
         </div>
       )}
 
@@ -39,9 +39,9 @@ export default function TotalRankingPage() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
               <tr style={{ borderBottom: "2px solid var(--border)", textAlign: "left" }}>
-                <th style={{ padding: "12px 8px", width: "60px", textAlign: "center" }}>#</th>
-                <th style={{ padding: "12px 8px" }}>Usuario</th>
-                <th style={{ padding: "12px 8px", width: "100px", textAlign: "center" }}>Puntos</th>
+                <th scope="col" style={{ padding: "12px 8px", width: "60px", textAlign: "center" }}>#</th>
+                <th scope="col" style={{ padding: "12px 8px" }}>Usuario</th>
+                <th scope="col" style={{ padding: "12px 8px", width: "100px", textAlign: "center" }}>Puntos</th>
               </tr>
             </thead>
             <tbody>

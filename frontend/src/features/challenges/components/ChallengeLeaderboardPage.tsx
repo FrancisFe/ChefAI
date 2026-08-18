@@ -8,6 +8,38 @@ import useAuthStore from "../../../store/authStore";
 import ChallengeFeed from "./ChallengeFeed";
 import axios from "axios";
 
+const mutedBoxStyle: React.CSSProperties = {
+  marginTop: "40px",
+  textAlign: "center",
+  padding: "40px",
+  border: "1px solid var(--border)",
+  borderRadius: "12px",
+  backgroundColor: "var(--bg)",
+};
+
+const heroCardStyle: React.CSSProperties = {
+  marginTop: "16px",
+  padding: "16px 20px",
+  border: "1px solid var(--accent-border)",
+  borderRadius: "10px",
+  backgroundColor: "var(--accent-bg)",
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+};
+
+const outlineButtonStyle: React.CSSProperties = {
+  marginTop: "24px",
+  padding: "10px 24px",
+  fontSize: "14px",
+  fontWeight: 500,
+  background: "transparent",
+  border: "1px solid var(--accent-border)",
+  borderRadius: "8px",
+  cursor: "pointer",
+  color: "var(--accent)",
+};
+
 export default function ChallengeLeaderboardPage() {
   const navigate = useNavigate();
   const userId = useAuthStore((s) => s.userId);
@@ -48,44 +80,28 @@ export default function ChallengeLeaderboardPage() {
     <div>
       <h1>Feed</h1>
 
-      {loadingChallenge && <p>Cargando desafío...</p>}
+      {loadingChallenge && <p style={{ color: "var(--text)" }}>Cargando desafío...</p>}
 
       {notFound && (
-        <div
-          style={{
-            marginTop: "40px",
-            textAlign: "center",
-            padding: "40px",
-            border: "1px solid #eee",
-            borderRadius: "12px",
-          }}
-        >
+        <div style={mutedBoxStyle}>
           <p style={{ fontSize: "48px", margin: 0 }}>🏆</p>
           <h2>No hay desafío activo esta semana</h2>
-          <p style={{ color: "#666" }}>Vuelve pronto para ver el próximo desafío.</p>
+          <p style={{ color: "var(--text)" }}>Vuelve pronto para ver el próximo desafío.</p>
         </div>
       )}
 
       {challenge && (
         <>
-          <div
-            style={{
-              marginTop: "16px",
-              padding: "16px 20px",
-              border: "2px solid #ffd700",
-              borderRadius: "10px",
-              background: "linear-gradient(135deg, #fff9e6, #fff3cc)",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-            }}
-          >
+          <span role="status" aria-live="polite" className="sr-only">
+            {ranking.length > 0 ? "Ranking actualizado en tiempo real" : ""}
+          </span>
+          <div style={heroCardStyle}>
             <span style={{ fontSize: "32px" }}>⭐</span>
             <div>
-              <p style={{ margin: 0, fontWeight: 600, color: "#b8860b" }}>
+              <p style={{ margin: 0, fontWeight: 600, color: "var(--accent)" }}>
                 {challenge.starIngredientName}
               </p>
-              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#888" }}>
+              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "var(--text)" }}>
                 {totalCount} participaciones
               </p>
             </div>
@@ -93,7 +109,7 @@ export default function ChallengeLeaderboardPage() {
 
           <div style={{ marginTop: "24px" }}>
             {feedQuery.isLoading ? (
-              <p>Cargando participaciones...</p>
+              <p style={{ color: "var(--text)" }}>Cargando participaciones...</p>
             ) : (
               <ChallengeFeed
                 entries={liveEntries}
@@ -112,17 +128,7 @@ export default function ChallengeLeaderboardPage() {
 
           <button
             onClick={() => navigate("/challenge/ranking")}
-            style={{
-              marginTop: "24px",
-              padding: "10px 24px",
-              fontSize: "14px",
-              fontWeight: 500,
-              background: "transparent",
-              border: "1px solid var(--accent)",
-              borderRadius: "8px",
-              cursor: "pointer",
-              color: "var(--accent)",
-            }}
+            style={outlineButtonStyle}
           >
             Ver ranking
           </button>

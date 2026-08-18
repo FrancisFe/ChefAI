@@ -7,6 +7,7 @@ export default function ChallengeHistoryCard({ challenge }: { challenge: Challen
   const [expanded, setExpanded] = useState(false);
   const feedQuery = useChallengeFeed(expanded ? challenge.id : null);
   const entries = flattenFeedPages(feedQuery.data);
+  const contentId = `challenge-history-${challenge.id}`;
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -24,6 +25,8 @@ export default function ChallengeHistoryCard({ challenge }: { challenge: Challen
     >
       <button
         onClick={() => setExpanded(!expanded)}
+        aria-expanded={expanded}
+        aria-controls={contentId}
         style={{
           width: "100%",
           display: "flex",
@@ -48,24 +51,24 @@ export default function ChallengeHistoryCard({ challenge }: { challenge: Challen
           <p style={{ margin: 0, fontWeight: 600, fontSize: "16px", color: "var(--text-h)" }}>
             {challenge.starIngredientName}
           </p>
-          <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#888" }}>
+          <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--text)" }}>
             {formatDate(challenge.startDate)} — {formatDate(challenge.endDate)} · {challenge.participationCount} participantes
           </p>
         </div>
-        <span style={{ fontSize: "18px", color: "#888", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}>
+        <span aria-hidden="true" style={{ fontSize: "18px", color: "var(--text)", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}>
           ▼
         </span>
       </button>
 
       {expanded && (
-        <div style={{ padding: "0 16px 16px", borderTop: "1px solid var(--border)" }}>
+        <div id={contentId} style={{ padding: "0 16px 16px", borderTop: "1px solid var(--border)" }}>
           {feedQuery.isLoading && (
-            <p style={{ textAlign: "center", color: "#888", padding: "24px 0" }}>
+            <p style={{ textAlign: "center", color: "var(--text)", padding: "24px 0" }}>
               Cargando resultados...
             </p>
           )}
           {feedQuery.isError && (
-            <p style={{ textAlign: "center", color: "#e53935", padding: "24px 0" }}>
+            <p style={{ textAlign: "center", color: "#e74c3c", padding: "24px 0" }}>
               Error al cargar las recetas del desafío.
             </p>
           )}
@@ -76,7 +79,7 @@ export default function ChallengeHistoryCard({ challenge }: { challenge: Challen
                   <ChallengeRankingTable entries={entries} />
                 </div>
               ) : (
-                <p style={{ textAlign: "center", color: "#888", padding: "24px 0" }}>
+                <p style={{ textAlign: "center", color: "var(--text)", padding: "24px 0" }}>
                   Este desafío no tuvo participaciones.
                 </p>
               )}

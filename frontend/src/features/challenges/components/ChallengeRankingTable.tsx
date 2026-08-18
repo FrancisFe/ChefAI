@@ -16,7 +16,7 @@ export default function ChallengeRankingTable({
 
   if (entries.length === 0) {
     return (
-      <p style={{ textAlign: "center", color: "#888", padding: "32px 0" }}>
+      <p style={{ textAlign: "center", color: "var(--text)", padding: "32px 0" }}>
         Aún no hay participaciones.
       </p>
     );
@@ -38,10 +38,10 @@ export default function ChallengeRankingTable({
               textAlign: "left",
             }}
           >
-            <th style={{ padding: "12px 8px", width: "60px", textAlign: "center" }}>#</th>
-            <th style={{ padding: "12px 8px" }}>Autor</th>
-            <th style={{ padding: "12px 8px" }}>Receta</th>
-            <th style={{ padding: "12px 8px", width: "80px", textAlign: "center" }}>Votos</th>
+            <th scope="col" style={{ padding: "12px 8px", width: "60px", textAlign: "center" }}>#</th>
+            <th scope="col" style={{ padding: "12px 8px" }}>Autor</th>
+            <th scope="col" style={{ padding: "12px 8px" }}>Receta</th>
+            <th scope="col" style={{ padding: "12px 8px", width: "80px", textAlign: "center" }}>Votos</th>
           </tr>
         </thead>
         <tbody>
@@ -51,9 +51,7 @@ export default function ChallengeRankingTable({
             return (
               <tr
                 key={entry.entryId}
-                onClick={() => navigate(`/recipe/${entry.recipeId}`)}
                 style={{
-                  cursor: "pointer",
                   borderBottom: "1px solid var(--border)",
                   transition: "background 0.15s",
                 }}
@@ -98,7 +96,22 @@ export default function ChallengeRankingTable({
                     maxWidth: "250px",
                   }}
                 >
-                  {entry.recipeTitle}
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/recipe/${entry.recipeId}`)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                      color: "inherit",
+                      fontWeight: "inherit",
+                      fontSize: "inherit",
+                      textAlign: "left",
+                    }}
+                  >
+                    {entry.recipeTitle}
+                  </button>
                 </td>
                 <td
                   style={{

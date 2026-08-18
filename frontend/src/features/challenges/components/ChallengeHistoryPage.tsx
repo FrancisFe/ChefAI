@@ -22,7 +22,7 @@ export default function ChallengeHistoryPage() {
         >
           <p style={{ fontSize: "48px", margin: 0 }}>📜</p>
           <h2>No hay desafíos anteriores</h2>
-          <p style={{ color: "#666" }}>
+          <p style={{ color: "var(--text)" }}>
             Los desafíos completados aparecerán aquí con su ranking final.
           </p>
         </div>

@@ -6,6 +6,50 @@ import { useRankingHub } from "../../recipes/hooks/useRankingHub";
 import ChallengeRankingTable from "./ChallengeRankingTable";
 import axios from "axios";
 
+const mutedBoxStyle: React.CSSProperties = {
+  marginTop: "40px",
+  textAlign: "center",
+  padding: "40px",
+  border: "1px solid var(--border)",
+  borderRadius: "12px",
+  backgroundColor: "var(--bg)",
+};
+
+const heroCardStyle: React.CSSProperties = {
+  marginTop: "16px",
+  padding: "16px 20px",
+  border: "1px solid var(--accent-border)",
+  borderRadius: "10px",
+  backgroundColor: "var(--accent-bg)",
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  marginBottom: "24px",
+};
+
+const outlineButtonStyle: React.CSSProperties = {
+  marginTop: "24px",
+  padding: "10px 24px",
+  fontSize: "14px",
+  fontWeight: 500,
+  background: "transparent",
+  border: "1px solid var(--accent-border)",
+  borderRadius: "8px",
+  cursor: "pointer",
+  color: "var(--accent)",
+};
+
+const loadMoreButtonStyle: React.CSSProperties = {
+  padding: "10px 24px",
+  fontSize: "14px",
+  fontWeight: 500,
+  background: "var(--bg)",
+  border: "1px solid var(--border)",
+  borderRadius: "8px",
+  cursor: "pointer",
+  color: "var(--text)",
+};
+
 export default function ChallengeRankingPage() {
   const navigate = useNavigate();
   const { data: challenge, isLoading: loadingChallenge, error } = useActiveChallenge();
@@ -40,52 +84,35 @@ export default function ChallengeRankingPage() {
     <div>
       <h1>Ranking</h1>
 
-      {loadingChallenge && <p>Cargando desafío...</p>}
+      {loadingChallenge && <p style={{ color: "var(--text)" }}>Cargando desafío...</p>}
 
       {notFound && (
-        <div
-          style={{
-            marginTop: "40px",
-            textAlign: "center",
-            padding: "40px",
-            border: "1px solid #eee",
-            borderRadius: "12px",
-          }}
-        >
+        <div style={mutedBoxStyle}>
           <p style={{ fontSize: "48px", margin: 0 }}>🏆</p>
           <h2>No hay desafío activo esta semana</h2>
-          <p style={{ color: "#666" }}>Vuelve pronto para ver el próximo desafío.</p>
+          <p style={{ color: "var(--text)" }}>Vuelve pronto para ver el próximo desafío.</p>
         </div>
       )}
 
       {challenge && (
         <>
-          <div
-            style={{
-              marginTop: "16px",
-              padding: "16px 20px",
-              border: "2px solid #ffd700",
-              borderRadius: "10px",
-              background: "linear-gradient(135deg, #fff9e6, #fff3cc)",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              marginBottom: "24px",
-            }}
-          >
+          <span role="status" aria-live="polite" className="sr-only">
+            {ranking.length > 0 ? "Ranking actualizado en tiempo real" : ""}
+          </span>
+          <div style={heroCardStyle}>
             <span style={{ fontSize: "32px" }}>⭐</span>
             <div>
-              <p style={{ margin: 0, fontWeight: 600, color: "#b8860b" }}>
+              <p style={{ margin: 0, fontWeight: 600, color: "var(--accent)" }}>
                 {challenge.starIngredientName}
               </p>
-              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#888" }}>
+              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "var(--text)" }}>
                 {totalCount} participaciones
               </p>
             </div>
           </div>
 
           {feedQuery.isLoading ? (
-            <p>Cargando ranking...</p>
+            <p style={{ color: "var(--text)" }}>Cargando ranking...</p>
           ) : (
             <ChallengeRankingTable entries={liveEntries} />
           )}
@@ -96,14 +123,8 @@ export default function ChallengeRankingPage() {
                 onClick={() => feedQuery.fetchNextPage()}
                 disabled={feedQuery.isFetchingNextPage}
                 style={{
-                  padding: "10px 24px",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  background: "var(--bg)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
+                  ...loadMoreButtonStyle,
                   cursor: feedQuery.isFetchingNextPage ? "not-allowed" : "pointer",
-                  color: "var(--text)",
                   opacity: feedQuery.isFetchingNextPage ? 0.5 : 1,
                 }}
               >
@@ -114,17 +135,7 @@ export default function ChallengeRankingPage() {
 
           <button
             onClick={() => navigate("/challenge/leaderboard")}
-            style={{
-              marginTop: "24px",
-              padding: "10px 24px",
-              fontSize: "14px",
-              fontWeight: 500,
-              background: "transparent",
-              border: "1px solid var(--accent)",
-              borderRadius: "8px",
-              cursor: "pointer",
-              color: "var(--accent)",
-            }}
+            style={outlineButtonStyle}
           >
             Ver feed con votación
           </button>

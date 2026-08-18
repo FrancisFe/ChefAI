@@ -54,16 +54,22 @@ export default function ChallengeEntryCard({
       </span>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <span
+        <button
+          type="button"
           onClick={() => navigate(`/recipe/${entry.recipeId}`)}
           style={{
             margin: 0,
+            padding: 0,
+            background: "none",
+            border: "none",
+            textAlign: "left",
             fontWeight: 600,
             fontSize: "16px",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
             display: "block",
+            width: "100%",
             cursor: "pointer",
             color: "var(--accent)",
             textDecoration: "none",
@@ -76,14 +82,15 @@ export default function ChallengeEntryCard({
           }}
         >
           {entry.recipeTitle}
-        </span>
-        <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#888" }}>
+        </button>
+        <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--text)" }}>
           👤 {entry.ownerName}
         </p>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <span
+          aria-live="polite"
           style={{
             fontSize: "18px",
             fontWeight: 700,
@@ -119,6 +126,14 @@ export default function ChallengeEntryCard({
                 ? "Quitar voto"
                 : "Votar"
             }
+            aria-label={
+              !challengeOpen
+                ? "El desafío está cerrado"
+                : entry.hasVoted
+                ? "Quitar voto"
+                : "Votar por esta receta"
+            }
+            aria-pressed={entry.hasVoted}
             style={{
               background: "none",
               border: "none",
@@ -126,7 +141,7 @@ export default function ChallengeEntryCard({
               fontSize: "22px",
               padding: "4px 8px",
               borderRadius: "6px",
-              color: entry.hasVoted ? "var(--accent)" : "#aaa",
+              color: entry.hasVoted ? "var(--accent)" : "var(--text)",
               opacity: isVoting || !challengeOpen ? 0.3 : 1,
               transition: "color 0.15s, transform 0.1s",
             }}
